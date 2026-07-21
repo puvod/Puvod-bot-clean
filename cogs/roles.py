@@ -128,9 +128,9 @@ async def setup(bot):
     @bot.tree.command(name="revive", description="Spustí Chat Revive event s možností výběru obtížnosti")
     @app_commands.checks.has_permissions(manage_messages=True)
     @app_commands.choices(difficulty=[
-        app_commands.Choice(name="🟢 Easy (10 XP)", value="easy"),
-        app_commands.Choice(name="🟡 Medium (25 XP)", value="medium"),
-        app_commands.Choice(name="🔴 Hard (50 XP)", value="hard")
+        app_commands.Choice(name="🟢 Easy (100 XP)", value="easy"),
+        app_commands.Choice(name="🟡 Medium (250 XP)", value="medium"),
+        app_commands.Choice(name="🔴 Hard (500 XP)", value="hard")
     ])
     async def revive(interaction: discord.Interaction, difficulty: app_commands.Choice[str]):
         diff_key = difficulty.value
