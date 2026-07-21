@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-# Pomocná funkce pro odstranění diakritiky (aby bot berogoval i na text bez háčků/čárek)
+# Pomocná funkce pro odstranění diakritiky (aby bot reagoval i na text bez háčků/čárek)
 def normalize_text(text: str) -> str:
     text = text.lower().strip()
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
@@ -80,9 +80,10 @@ QUESTIONS = {
         {"q": "Které roční období následuje po zimě? 🌸", "a": ["jaro"], "xp": 10},
         {"q": "Kdo je hlavní postava v pohádce o Šípkové Růžence? 👑", "a": ["ruzenka", "sipkova ruzenka"], "xp": 10},
         {"q": "Kolik minut má jedna hodina? ⏱️", "a": ["60", "sedesat"], "xp": 10},
-        {"q": "Které zvíře dává mléko a dělá 'Bůř'? 🐄", "a": ["krava"], "xp": 10}
+        {"q": "Které zvíře dává mléko a dělá 'Bůů'? 🐄", "a": ["krava"], "xp": 10}
     ],
     "medium": [
+        {"q": "Ve kterém roce skončila 2. světová válka? 📜", "a": ["1945"], "xp": 25},
         {"q": "Jaké je hlavní město Slovenska? 🇸🇰", "a": ["bratislava"], "xp": 25},
         {"q": "Který je nejdelší orgán v lidském těle? 🧠", "a": ["tenke strevo", "strevo", "kuze"], "xp": 25},
         {"q": "Jaké je hlavní město Francie? 🇫🇷", "a": ["pariz"], "xp": 25},
@@ -100,19 +101,18 @@ QUESTIONS = {
         {"q": "Jak se jmenuje proces, při kterém rostliny vyrábějí kyslík? 🌿", "a": ["fotosynteza"], "xp": 25},
         {"q": "Které město je známé jako 'Věčné město'? 🏛️", "a": ["rim"], "xp": 25},
         {"q": "Rychlá matematika: Kolik je **144 / 12**? 🧮", "a": ["12"], "xp": 25},
-        {"q": "Který savinec dokáže létat? 🦇", "a": ["netopyr"], "xp": 25}
+        {"q": "Který savec dokáže létat? 🦇", "a": ["netopyr"], "xp": 25}
     ],
     "hard": [
         {"q": "Jaké je hlavní město Austrálie? (Pozor, Sydney to není!) 🇦🇺", "a": ["canberra"], "xp": 50},
         {"q": "Který chemický prvek má značku **Au**? 🥇", "a": ["zlato"], "xp": 50},
         {"q": "Jak se jmenuje nejhlubší místo na Zemi? 🌊", "a": ["mariansky prikop", "marianska prikop"], "xp": 50},
         {"q": "Rychlá matematika: Kolik je **15 x 15**? 🧮", "a": ["225"], "xp": 50},
-        {"q": "Ve kterém roce skončila 2. světová válka? 📜", "a": ["1945"], "xp": 50},
         {"q": "Jaké je hlavní město Kanady? 🇨🇦", "a": ["ottawa"], "xp": 50},
         {"q": "Jak se jmenuje největší poušť na světě (mimo polární)? 🏜️", "a": ["sahara"], "xp": 50},
         {"q": "Slovo pozpátku: Napiš **HYPERPROSTOR** pozpátku! 🔄", "a": ["rostorprepyh"], "xp": 50},
         {"q": "Která kost v lidském těle je nejdelší a nejsilnější? 🦴", "a": ["ost stehenni", "stehenni kost", "stehenni"], "xp": 50},
-        {"q": "Jaké je hlavní město Brazilie? 🇧🇷", "a": ["brasilia"], "xp": 50},
+        {"q": "Jaké je hlavní město Brazílie? 🇧🇷", "a": ["brasilia"], "xp": 50},
         {"q": "Která planeta má nejvíce měsíců ve Sluneční soustavě? 🪐", "a": ["saturn"], "xp": 50},
         {"q": "Rychlá matematika: Kolik je **(45 + 55) x 3**? 🧮", "a": ["300"], "xp": 50},
         {"q": "Který stát má největší rozlohu na světě? 🗺️", "a": ["rusko"], "xp": 50},
@@ -128,9 +128,9 @@ async def setup(bot):
     @bot.tree.command(name="revive", description="Spustí Chat Revive event s možností výběru obtížnosti")
     @app_commands.checks.has_permissions(manage_messages=True)
     @app_commands.choices(difficulty=[
-        app_commands.Choice(name="🟢 Easy (100 XP)", value="easy"),
-        app_commands.Choice(name="🟡 Medium (250 XP)", value="medium"),
-        app_commands.Choice(name="🔴 Hard (500 XP)", value="hard")
+        app_commands.Choice(name="🟢 Easy (10 XP)", value="easy"),
+        app_commands.Choice(name="🟡 Medium (25 XP)", value="medium"),
+        app_commands.Choice(name="🔴 Hard (50 XP)", value="hard")
     ])
     async def revive(interaction: discord.Interaction, difficulty: app_commands.Choice[str]):
         diff_key = difficulty.value
@@ -149,7 +149,7 @@ async def setup(bot):
             description=f"**Otázka:** {question_data['q']}\n\n*První správná odpověď vyhrává **{question_data['xp']} XP**!*",
             color=colors.get(diff_key, discord.Color.blue())
         )
-        embed.set_footer(text="Čas na odpověď: 60 sekund")
+        embed.set_footer(text="Čas na odpověď: 5 minut")
         
         await interaction.response.send_message(content=f"<@&{chat_revive_role_id}>", embed=embed)
         
@@ -160,7 +160,8 @@ async def setup(bot):
             return any(normalized_msg == normalize_text(ans) for ans in question_data['a'])
 
         try:
-            winner_msg = await bot.wait_for('message', check=check, timeout=60.0)
+            # Čeká až 300 sekund (5 minut)
+            winner_msg = await bot.wait_for('message', check=check, timeout=300.0)
             
             win_embed = discord.Embed(
                 title="🎉 MÁME VÍTĚZE! 🎉",
