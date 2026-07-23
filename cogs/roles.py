@@ -11,7 +11,7 @@ def normalize_text(text: str) -> str:
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
 
 # -------------------------------------------------------------------
-# STARÉ TRÍDY PRO DYNAMICKÁ MENU (Potřebné pro main.py a persistent views)
+# STARÉ TŘÍDY PRO DYNAMICKÁ MENU (Potřebné pro main.py a persistent views)
 # -------------------------------------------------------------------
 
 class RoleModal(discord.ui.Modal, title='Vytvořit menu rolí'):
@@ -166,7 +166,7 @@ QUESTIONS = {
         {"q": "Jak se jmenoval rakouský arcivévoda, jehož atentát v Sarajevě rozpoutal 1. světovou válku? 👑", "a": ["frantisek ferdinand", "frantisek ferdinand d este", "ferdinand"], "xp": 100},
         {"q": "Kdo napsal slavnou divadelní hru Romeo a Julie? 🎭", "a": ["william shakespeare", "shakespeare"], "xp": 100},
         {"q": "Jak se jmenuje nejvyšší hora světa (nad mořem)? 🏔️", "a": ["mount everest", "everest"], "xp": 100},
-        {"q": "Kolik komor má lidské srdce? 🫀", "a": ["4", "ctyri"], "xp": 100}
+        {"q": "Kolik komor má lidské srdce? 🫀", "a": ["4", "ctyri"], "xp": 100},
         {"q": "Jaká je nejznámější kryptoměna na světě? ₿", "a": ["bitcoin", "btc"], "xp": 100},
         {"q": "Které zvíře je známé tím, že mění barvy podle prostředí? 🦎", "a": ["chameleon"], "xp": 100},
         {"q": "Jak se jmenuje planeta, na které žijeme? 🌍", "a": ["zeme"], "xp": 100},
@@ -195,7 +195,7 @@ QUESTIONS = {
         {"q": "Které zvíře má nejdelší krk na světě? 🦒", "a": ["zirafa"], "xp": 100},
         {"q": "Slovo pozpátku: Napiš slovo **KÓD** pozpátku! 🔄", "a": ["dok"], "xp": 100},
         {"q": "Jak se jmenuje pohádková bytost s jedním rohem na čele? 🦄", "a": ["jednorozec"], "xp": 100},
-        {"q": "Rychlá matematika: Kolik je **100 / 4**? 🧮", "a": ["25"], "xp": 100},
+        {"q": "Rychlá matematika: Kolik je **100 / 4**? 🧮", "a": ["25"], "xp": 100}
     ],
     "medium": [
         {"q": "Ve kterém roce skončila 2. světová válka? 📜", "a": ["1945"], "xp": 250},
@@ -242,7 +242,7 @@ QUESTIONS = {
         {"q": "Která krevní skupina je považována za univerzálního dárce? 🩸", "a": ["0-", "0 negativni", "0 minus", "0"], "xp": 250},
         {"q": "Který orgán je největším vnitřním orgánem lidského těla? 🫁", "a": ["jatra"], "xp": 250},
         {"q": "Kdo namaloval slavnou nástěnnou malbu 'Poslední večeře'? 🎨", "a": ["leonardo da vinci", "da vinci", "leonardo"], "xp": 250},
-        {"q": "Který slavný nizozemský malíř si v záchvatu odřízl ucho? 🎨", "a": ["vincent van gogh", "van gogh", "gogh"], "xp": 250}
+        {"q": "Který slavný nizozemský malíř si v záchvatu odřízl ucho? 🎨", "a": ["vincent van gogh", "van gogh", "gogh"], "xp": 250},
         {"q": "Který prvek má v periodické tabulce značku **O**? 🧪", "a": ["kyslik"], "xp": 250},
         {"q": "Ve kterém městě sídlí Evropská unie (hlavní sídlo)? 🇪🇺", "a": ["brusels", "brusel"], "xp": 250},
         {"q": "Jak se jmenuje největší mořský savec na světě? 🐋", "a": ["plejtvak obrovsky", "plejtvak", "valery"], "xp": 250},
@@ -267,7 +267,7 @@ QUESTIONS = {
         {"q": "Jak se jmenuje největší pevninský savec na Zemi? 🐘", "a": ["slon", "slon africky"], "xp": 250},
         {"q": "Jaká je oficiální měna ve Velké Británii? 💷", "a": ["libra", "libra sterlinku"], "xp": 250},
         {"q": "Slovo pozpátku: Napiš **GAMING** pozpátku! 🔄", "a": ["gnimag"], "xp": 250},
-        {"q": "Ve kterém měsíci se slaví Štědrý den? 🎄", "a": ["prosinec", "12"], "xp": 250},
+        {"q": "Ve kterém měsíci se slaví Štědrý den? 🎄", "a": ["prosinec", "12"], "xp": 250}
     ],
     "hard": [
         {"q": "Jaké je hlavní město Austrálie? (Pozor, Sydney to není!) 🇦🇺", "a": ["canberra"], "xp": 500},
@@ -306,7 +306,7 @@ QUESTIONS = {
         {"q": "Jak se jmenuje největší plošná/objemová sopka na Zemi (na Havaji)? 🌋", "a": ["mauna loa"], "xp": 500},
         {"q": "Který renesanční sochař vytvořil slavnou mramorovou sochu Davida? 🗿", "a": ["michelangelo", "michelangelo buonarroti"], "xp": 500},
         {"q": "Který orgán v lidském těle slouží k filtraci krve a tvorbě moči? 🫘", "a": ["ledviny", "ledvina"], "xp": 500},
-        {"q": "Jak se jmenovala kosmická loď, se kterou Neil Armstrong přistál na Měsíci? 🚀", "a": ["apollo 11", "apollo"], "xp": 500}
+        {"q": "Jak se jmenovala kosmická loď, se kterou Neil Armstrong přistál na Měsíci? 🚀", "a": ["apollo 11", "apollo"], "xp": 500},
         {"q": "Jaké je hlavní město Egypta? 🇪🇬", "a": ["kahira"], "xp": 500},
         {"q": "Který chemický prvek má značku **C**? 🧪", "a": ["uhlik"], "xp": 500},
         {"q": "Rychlá matematika: Kolik je **18 x 18**? 🧮", "a": ["324"], "xp": 500},
@@ -339,7 +339,7 @@ QUESTIONS = {
         {"q": "Jaké je hlavní město Argentina? 🇦🇷", "a": ["buenos aires"], "xp": 500},
         {"q": "Jak se jmenuje nejznámější starověký řecký filosof (učitel Platóna)? 🏛️", "a": ["sokrates"], "xp": 500},
         {"q": "Která poušť se nachází v Mongolsku a Číně? 🏜️", "a": ["gobi"], "xp": 500},
-        {"q": "Jak se jmenuje největší tepna v lidském těle? 🩸", "a": ["aorta"], "xp": 500},
+        {"q": "Jak se jmenuje největší tepna v lidském těle? 🩸", "a": ["aorta"], "xp": 500}
     ],
     "ultrahard": [
         {"q": "Jaké je hlavní město Švýcarska? (Chyták: Oficiálně hlavní město nemá, ale faktickým sídlem je...)", "a": ["bern"], "xp": 1000},
@@ -352,159 +352,144 @@ QUESTIONS = {
         {"q": "Který fyzik formuloval obecnou teorii relativity? 🧠", "a": ["albert einstein", "einstein"], "xp": 1000},
         {"q": "Jaké je hlavní město Maroka? 🇲🇦", "a": ["rabat"], "xp": 1000},
         {"q": "Kolik bitů tvoří jeden Byte (bajt)? 💻", "a": ["8", "osm"], "xp": 1000},
-        {"q": "Jaké je hlavní město Vietnamu? 🇻🇳", "a": ["hanoj"], "xp": 1000},
-        {"q": "Který chemický prvek má nejvyšší bod tání ze všech kovů? 💡", "a": ["volfram", "tungsten"], "xp": 1000},
-        {"q": "Rychlá matematika: Kolik je **2 na 10. mocninu (2^10)**? 🧮", "a": ["1024"], "xp": 1000},
-        {"q": "Jaké je hlavní město Kazachstánu? 🇰🇿", "a": ["astana"], "xp": 1000},
+        {"q": "Jaké je hlavní město Vietnamu? 🇻🇳", "a": ["hanoj", "hanoi"], "xp": 1000}
+        {"q": "Jaké je hlavní město Kanady? 🇨🇦", "a": ["ottawa"], "xp": 1000},
+        {"q": "Jaké je chemické označení pro zlato? 🧪", "a": ["au"], "xp": 1000},
         {"q": "Ve kterém roce byla podepsána Deklarace nezávislosti USA? 📜", "a": ["1776"], "xp": 1000},
-        {"q": "Jak se jmenuje nejvzdálenější planeta od Slunce v naší soustavě? 🪐", "a": ["neptun"], "xp": 1000},
-        {"q": "Které je největší jezero v České republice (podle rozlohy)? 🌊", "a": ["cerne jezero", "cerne"], "xp": 1000},
-        {"q": "Slovo pozpátku: Napiš **SYNCHROTRON** pozpátku! 🔄", "a": ["nortorhcnys"], "xp": 1000},
-        {"q": "Jaká je nejlidnatější země Afrického kontinentu? 🇳🇬", "a": ["nigerie"], "xp": 1000},
-        {"q": "Jak se jmenuje jediný známý savec, který klade vejce? 🦆", "a": ["ptakopysk"], "xp": 1000},
-        {"q": "Rychlá matematika: Kolik je **3^5 (3 na pátou)**? 🧮", "a": ["243"], "xp": 1000},
+        {"q": "Jak se jmenuje nejhlubší místo na Zemi (v Marianském příkopu)? 🌊", "a": ["challengeruv prohluben", "challengerova prohluben", "challenger", "mariansky prikop"], "xp": 1000},
+        {"q": "Rychlá matematika: Kolik je odmocnina ze 625? 🧮", "a": ["25"], "xp": 1000},
+        {"q": "Slovo pozpátku: Napiš **NEJNEOBHOSPODAŘOVATELNĚJŠÍMI** pozpátku! 🔄", "a": ["imijsotelavodapsohboennejen"], "xp": 1000},
+        {"q": "Jaké je hlavní město Austrálie? 🇦🇺", "a": ["canberra"], "xp": 1000},
+        {"q": "Který fyzik objevil neutron v roce 1932? ⚛️", "a": ["james chadwick", "chadwick"], "xp": 1000},
+        {"q": "Které město bylo hlavním městem Kazachstánu před Astanou? 🇰🇿", "a": ["almaty", "alma-ata", "alma ata"], "xp": 1000},
+        {"q": "Ve kterém roce začala Stoletá válka? ⚔️", "a": ["1337"], "xp": 1000},
+        {"q": "Jaká je chemická značka pro wolfram? 🧪", "a": ["w"], "xp": 1000},
+        {"q": "Jaké je hlavní město Brazílie? 🇧🇷", "a": ["brasilia"], "xp": 1000},
+        {"q": "Který matematik a filosof prononesl větu 'Cogito, ergo sum'? 🧠", "a": ["rene descartes", "descartes"], "xp": 1000},
+        {"q": "Jak se jmenuje nejmenší kost v lidském těle? 🦴", "a": ["strminek", "strmínek"], "xp": 1000},
+        {"q": "Rychlá matematika: Kolik je 17 x 19? 🧮", "a": ["323"], "xp": 1000},
+        {"q": "Jaká je nejmenší nezávislá republika podle rozlohy na světě? 🇻🇦", "a": ["vatikan"], "xp": 1000},
+        {"q": "Který prvek má atomové číslo 1? ⚛️", "a": ["vodik", "h"], "xp": 1000},
         {"q": "Jaké je hlavní město Islandu? 🇮🇸", "a": ["reykjavik"], "xp": 1000},
-        {"q": "Jaká je základní jednotka elektrického proudu v soustavě SI? ⚡", "a": ["amper", "a"], "xp": 1000},
-        {"q": "Který český šlechtic se po Bílé hoře stal vrchním velitelem císařských vojsk? ⚔️", "a": ["albrecht z valdstejna", "valdstejn"], "xp": 1000},
-        {"q": "Jak se jmenoval sovětský vůdce během 2. světové války a počátku Studené války? 🏛️", "a": ["stalin", "josif stalin"], "xp": 1000},
-        {"q": "Jak se nazývá vojenský pakt západních zemí založený v roce 1949? 🛡️", "a": ["nato", "severoatlanticka aliance"], "xp": 1000},
-        {"q": "Jak se jmenovala krvavá bitva z roku 1916 u francouzského města v 1. světové válce? 🇫🇷", "a": ["verdun", "bitva u verdunu"], "xp": 1000},
-        {"q": "Jak se jmenuje úplně nejvyšší sopka na Zemi (měřeno od základny na mořském dně)? 🌋", "a": ["mauna kea"], "xp": 1000},
-        {"q": "Který český barokní malíř je známý svými temnými portréty a působil na dvoře v Praze? 🎨", "a": ["karel skreta", "skreta", "petr brandl", "brandl"], "xp": 1000},
-        {"q": "Jaká je nejmenší kost v lidském těle (nachází se v uchu)? 🦴", "a": ["trminek"], "xp": 1000}
-        {"q": "Jaké je hlavní město Jihoafrické republiky (výkonné sídlo)? 🇿🇦", "a": ["pretoria"], "xp": 1000},
-        {"q": "Který prvek má v periodické tabulce značku **Hg**? 🧪", "a": ["rtut"], "xp": 1000},
-        {"q": "Rychlá matematika: Kolik je odmocnina ze **625**? 🧮", "a": ["25"], "xp": 1000},
-        {"q": "Jaké je hlavní město Íránu? 🇮🇷", "a": ["teheran"], "xp": 1000},
-        {"q": "Která je nejhlubší sladkovodní jezero na světě (v Rusku)? 🌊", "a": ["bajkal"], "xp": 1000},
-        {"q": "Jak se jmenuje nejmenší samostatný stát v Africe? 🌍", "a": ["gambie"], "xp": 1000},
-        {"q": "Který fyzik objevil zákon všeobecné gravitace (jablko ze stromu)? 🍎", "a": ["isaac newton", "newton"], "xp": 1000},
-        {"q": "Slovo pozpátku: Napiš **KRYPTOGRAFIE** pozpátku! 🔄", "a": ["eifargotpyrk"], "xp": 1000},
-        {"q": "Ve kterém roce proběhl první černý čtvrtek na newyorské burze (krize)? 📉", "a": ["1929"], "xp": 1000},
-        {"q": "Jaké je hlavní město Finska? 🇫🇮", "a": ["helsinky", "helsinki"], "xp": 1000},
-        {"q": "Rychlá matematika: Kolik je **2 na 8. mocninu (2^8)**? 🧮", "a": ["256"], "xp": 1000},
+        {"q": "Ve kterém roce skončila první světová válka? 🕊️", "a": ["1918"], "xp": 1000},
+        {"q": "Který král vládl v Anglii během vzniku anglikánské církve a měl 6 žen? 👑", "a": ["jindrich viii", "jindrich 8", "henry viii", "jindrich viii."], "xp": 1000},
+        {"q": "Jaké je chemické označení pro olovo? 🧪", "a": ["pb"], "xp": 1000},
+        {"q": "Jaké je hlavní město Nového Zélandu? 🇳🇿", "a": ["wellington"], "xp": 1000},
+        {"q": "Kolik kilometrů za hodinu je přibližně rychlost světla ve vakuu (v milionech, nebo přesně v km/s)? Napiš přesnou hodnotu v km/s! ⚡", "a": ["299792", "299 792", "300000", "299792458"], "xp": 1000},
+        {"q": "Jaké je hlavní město JAR (Jihoafrické republiky) – zakonodárné město? 🇿🇦", "a": ["kapske mesto", "cape town"], "xp": 1000},
+        {"q": "Slovo pozpátku: Napiš **KAPITULACE** pozpátku! 🔄", "a": ["ecalutipak"], "xp": 1000},
+        {"q": "Který slavný malíř si odřízl část vlastního ucha? 🎨", "a": ["vincent van gogh", "van gogh", "gogh"], "xp": 1000},
+        {"q": "Jaké je hlavní město Mongolska? 🇲🇳", "a": ["ulanbatar", "ulan batar", "ulánbátar"], "xp": 1000},
+        {"q": "Rychlá matematika: Kolik je 2 na osmou (2^8)? 🧮", "a": ["256"], "xp": 1000},
+        {"q": "Ve kterém roce vyhořel Národní divadlo v Praze? 🏛️", "a": ["1881"], "xp": 1000},
         {"q": "Jaká je chemická značka pro draslík? 🧪", "a": ["k"], "xp": 1000},
-        {"q": "Která země je největším producentem kávy na světě? ☕", "a": ["brazilie"], "xp": 1000},
-        {"q": "Jak se nazývá nejtvrdší kosterní tkáň v těle (na zubech)? 🦷", "a": ["sklovina", "zubni sklovina"], "xp": 1000},
-        {"q": "Jaké je hlavní město Thajska? 🇹🇭", "a": ["bangkok"], "xp": 1000},
-        {"q": "Který renesanční astronom prohlásil, že Země obíhá kolem Slunce? 🌌", "a": ["mikulas kopernik", "kopernik", "galileo galilei"], "xp": 1000},
-        {"q": "Který prvek má nejnižší hustotu ze všech plynů? 🎈", "a": ["vodik"], "xp": 1000},
-        {"q": "Rychlá matematika: Kolik je **13 x 13**? 🧮", "a": ["169"], "xp": 1000},
-        {"q": "Jaké je hlavní město Indonésie? 🇮🇩", "a": ["djakartah", "jakarta"], "xp": 1000},
-        {"q": "Ve kterém roce byl upálen Jan Hus v Kostnici? 📜", "a": ["1415"], "xp": 1000},
-        {"q": "Jaká je nejvyšší hora Severní Ameriky (Denali)? 🏔️", "a": ["denali", "mount mckinley", "mckinley"], "xp": 1000},
-        {"q": "Který chemický prvek má značku **Pb**? 🧪", "a": ["olovo"], "xp": 1000},
-        {"q": "Slovo pozpátku: Napiš **NEUROCHIRURGIE** pozpátku! 🔄", "a": ["eigrurohcruen"], "xp": 1000},
-        {"q": "Jaké je hlavní město Filipín? 🇵🇭", "a": ["manila"], "xp": 1000},
-        {"q": "Rychlá matematika: Kolik je odmocnina ze **400**? 🧮", "a": ["20"], "xp": 1000},
-        {"q": "Která je nejdelší řeka v Severní Americe? 🌊", "a": ["missouri", "mississippi"], "xp": 1000},
-        {"q": "Které město bylo zničeno výbuchem sopky Vesuv v roce 79 n. l.? 🌋", "a": ["pompeje"], "xp": 1000},
-        {"q": "Jaká je základní jednotka síly v soustavě SI? ⚖️", "a": ["newton", "n"], "xp": 1000},
-        {"q": "Jaké je hlavní město Kolumbie? 🇨🇴", "a": ["bogota"], "xp": 1000},
-        {"q": "Která planeta má největší sopku ve Sluneční soustavě (Olympus Mons)? 🌋", "a": ["mars"], "xp": 1000},
-        {"q": "Rychlá matematika: Kolik je **15 x 12**? 🧮", "a": ["180"], "xp": 1000},
-        {"q": "Jaký je nejstarší dosud fungující univerzita na světě (v Boloni)? 🏛️", "a": ["bolonska", "univerzita v boloni"], "xp": 1000},
-        {"q": "Jaké je hlavní město Dánska? 🇩🇰", "a": ["kodan"], "xp": 1000},
-        {"q": "Který prvek má chemickou značku **Fe**? 🧪", "a": ["zelezo"], "xp": 1000},
-        {"q": "Ve kterém roce začala Velká francouzská revoluce? 📜", "a": ["1789"], "xp": 1000},
-        {"q": "Slovo pozpátku: Napiš **INFRASTRUKTURA** pozpátku! 🔄", "a": ["arutkurtsarfni"], "xp": 1000},
-        {"q": "Jaké je hlavní město Saúdské Arábie? 🇸🇦", "a": ["rijad"], "xp": 1000},
-        {"q": "Která část oka reaguje na světlo a dává oku barvu? 👁️", "a": ["duhovka"], "xp": 1000},
-        {"q": "Rychlá matematika: Kolik je odmocnina ze **196**? 🧮", "a": ["14"], "xp": 1000},
-        {"q": "Jaké je hlavní město Peru? 🇵🇪", "a": ["lima"], "xp": 1000},
+        {"q": "Jaké je hlavní město Švédska? 🇸🇪", "a": ["stockholm"], "xp": 1000},
+        {"q": "Který fyzik definoval tři základní pohybové zákony? 🍎", "a": ["isaac newton", "newton"], "xp": 1000},
+        {"q": "Který oceán je druhý největší na světě? 🌊", "a": ["atlanticky", "atlantik", "atlanticky ocean"], "xp": 1000},
+        {"q": "Jak se jmenuje nejvyšší činná sopka v Evropě? 🌋", "a": ["etna"], "xp": 1000},
+        {"q": "Slovo pozpátku: Napiš **RESTRUKTURALIZACE** pozpátku! 🔄", "a": ["ecazilarutkurtser"], "xp": 1000},
+        {"q": "Rychlá matematika: Kolik je odmocnina z **1024**? 🧮", "a": ["32"], "xp": 1000},
+        {"q": "Jaké je hlavní město Keňi? 🇰🇪", "a": ["nairobi"], "xp": 1000},
+        {"q": "Jaká je chemická značka pro rtut? 🧪", "a": ["hg"], "xp": 1000},
+        {"q": "Která řeka je nejdelší na světě podle nejnovějších měření? 🌊", "a": ["amazonka", "nil"], "xp": 1000}
     ]
 }
 
 # -------------------------------------------------------------------
-# COG A PŘÍKAZY
+# DISCORD COG & LOGIKA PRO CHAT REVIVE (OTÁZKY)
 # -------------------------------------------------------------------
 
-class RolesCog(commands.Cog):
+class ChatReviveCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.active_questions = {}  # channel_id: True/False
 
-    # Textový příkaz !role / !roles pro vytvoření Brawl Stars výběru
-    @commands.command(name="role", aliases=["roles"])
-    async def role_cmd(self, ctx: commands.Context):
+    @app_commands.command(name="revive", description="Spustí kvízovou otázku pro oživení chatu")
+    async def revive(self, interaction: discord.Interaction):
+        channel_id = interaction.channel.id
+        
+        if self.active_questions.get(channel_id, False):
+            await interaction.response.send_message("V tomto kanálu už běží jedna otázka!", ephemeral=True)
+            return
+
+        # Výběr obtížnosti podle šance
+        rand_val = random.random()
+        if rand_val < 0.40:
+            difficulty = "easy"
+            diff_label = "🟢 LEHKÁ"
+            color = discord.Color.green()
+        elif rand_val < 0.75:
+            difficulty = "medium"
+            diff_label = "🟡 STŘEDNÍ"
+            color = discord.Color.gold()
+        elif rand_val < 0.95:
+            difficulty = "hard"
+            diff_label = "🔴 TĚŽKÁ"
+            color = discord.Color.red()
+        else:
+            difficulty = "ultrahard"
+            diff_label = "🟣 ULTRA TĚŽKÁ"
+            color = discord.Color.purple()
+
+        question_data = random.choice(QUESTIONS[difficulty])
+        question_text = question_data["q"]
+        correct_answers = question_data["a"]
+        xp_reward = question_data["xp"]
+
         embed = discord.Embed(
-            title="🌵 BRAWL STARS RANKY 🌵",
-            description="Vyber si svůj aktuální rank v Brawl Stars z nabídky níže!",
-            color=discord.Color.og_blurple()
+            title="⚡ CHAT REVIVE - KVÍZ ⚡",
+            description=f"**{question_text}**\n\nNapiš odpověď přímo do chatu!\n*(Máš na to 30 sekund)*",
+            color=color
         )
-        embed.set_footer(text="Vybráním nového ranku se tvůj předchozí rank automaticky přepíše.")
-        view = RankSelectView()
-        await ctx.send(embed=embed, view=view)
+        embed.add_field(name="Obtížnost", value=diff_label, inline=True)
+        embed.add_field(name="Odměna", value=f"**+{xp_reward} XP**", inline=True)
+        embed.set_footer(text="První správná odpověď vyhrává!")
 
-async def setup(bot):
-    await bot.add_cog(RolesCog(bot))
+        await interaction.response.send_message(embed=embed)
+        self.active_questions[channel_id] = True
 
-    @bot.tree.command(name="create-role-menu", description="Vytvoří interaktivní menu rolí")
-    @app_commands.checks.has_permissions(manage_messages=True)
-    async def create_role_menu(interaction: discord.Interaction):
-        await interaction.response.send_modal(RoleModal())
-
-    @bot.tree.command(name="role", description="Vyber si svůj Brawl Stars rank")
-    async def role_slash(interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="🌵 BRAWL STARS RANKY 🌵",
-            description="Vyber si svůj aktuální rank v Brawl Stars z nabídky níže!",
-            color=discord.Color.og_blurple()
-        )
-        embed.set_footer(text="Vybráním nového ranku se tvůj předchozí rank automaticky přepíše.")
-        view = RankSelectView()
-        await interaction.response.send_message(embed=embed, view=view)
-
-    @bot.tree.command(name="revive", description="Spustí Chat Revive event s možností výběru obtížnosti")
-    @app_commands.checks.has_permissions(manage_messages=True)
-    @app_commands.choices(difficulty=[
-        app_commands.Choice(name="🟢 Easy (100 XP)", value="easy"),
-        app_commands.Choice(name="🟡 Medium (250 XP)", value="medium"),
-        app_commands.Choice(name="🔴 Hard (500 XP)", value="hard"),
-        app_commands.Choice(name="🟣 Ultra Hard (1000 XP)", value="ultrahard")
-    ])
-    async def revive(interaction: discord.Interaction, difficulty: app_commands.Choice[str]):
-        diff_key = difficulty.value
-        question_data = random.choice(QUESTIONS[diff_key])
-        
-        chat_revive_role_id = 1475934465623588904
-        
-        colors = {
-            "easy": discord.Color.green(),
-            "medium": discord.Color.gold(),
-            "hard": discord.Color.red(),
-            "ultrahard": discord.Color.purple()
-        }
-        
-        embed = discord.Embed(
-            title=f"⚡ CHAT REVIVE EVENT [{difficulty.name}] ⚡",
-            description=f"**Otázka:** {question_data['q']}\n\n*První správná odpověď vyhrává **{question_data['xp']} XP**!*",
-            color=colors.get(diff_key, discord.Color.blue())
-        )
-        embed.set_footer(text="Čas na odpověď: 5 minut")
-        
-        await interaction.response.send_message(content=f"<@&{chat_revive_role_id}>", embed=embed)
-        
-        def check(m):
-            if m.channel != interaction.channel or m.author.bot:
+        def check(message: discord.Message):
+            if message.channel.id != channel_id or message.author.bot:
                 return False
-            normalized_msg = normalize_text(m.content)
-            return any(normalized_msg == normalize_text(ans) for ans in question_data['a'])
+            user_ans = normalize_text(message.content)
+            return any(ans in user_ans for ans in correct_answers)
 
         try:
-            winner_msg = await bot.wait_for('message', check=check, timeout=300.0)
-            
-            win_embed = discord.Embed(
-                title="🎉 MÁME VÍTĚZE! 🎉",
-                description=f"Uživatel {winner_msg.author.mention} odpověděl správně jako první!\n\n**Odpověď:** {winner_msg.content}\n**Odměna:** +{question_data['xp']} XP",
-                color=discord.Color.brand_green()
-            )
-            await interaction.channel.send(embed=win_embed)
-            
+            winner_msg = await self.bot.wait_for('message', timeout=30.0, check=check)
         except asyncio.TimeoutError:
-            correct_answers = ", ".join(question_data['a'])
-            fail_embed = discord.Embed(
-                title="⏰ ČAS VYPRŠEL!",
-                description=f"Nikdo nestihl odpovědět včas.\n**Správná odpověď byla:** {correct_answers}",
+            self.active_questions[channel_id] = False
+            timeout_embed = discord.Embed(
+                title="⏰ Čas vypršel!",
+                description=f"Nikdo neodpověděl správně.\nSprávná odpověď byla: **{correct_answers[0].capitalize()}**",
                 color=discord.Color.dark_gray()
             )
-            await interaction.channel.send(embed=fail_embed)
+            await interaction.channel.send(embed=timeout_embed)
+            return
+
+        self.active_questions[channel_id] = False
+
+        # Odměnění výherce XP přes Leveling Cog (pokud existuje)
+        level_cog = self.bot.get_cog("LevelingCog")
+        if level_cog and hasattr(level_cog, "add_xp"):
+            await level_cog.add_xp(winner_msg.author, xp_reward, interaction.channel)
+
+        win_embed = discord.Embed(
+            title="🎉 Máme vítěze!",
+            description=f"{winner_msg.author.mention} odpověděl(a) správně: **{winner_msg.content}**\n\nZískává **+{xp_reward} XP**!",
+            color=discord.Color.gold()
+        )
+        await interaction.channel.send(embed=win_embed)
+
+    @app_commands.command(name="setup_brawl_ranks", description="Odesle menu pro vyber Brawl Stars ranku")
+    @commands.has_permissions(administrator=True)
+    async def setup_brawl_ranks(self, interaction: discord.Interaction):
+        embed = discord.Embed(
+            title="🏆 BRAWL STARS RANKY",
+            description="Vyber si svůj aktuální rank v Brawl Stars z menu níže.\nPo výběru ti bude automaticky přidělena příslušná role na serveru!",
+            color=discord.Color.og_shapes() if hasattr(discord.Color, "og_shapes") else discord.Color.blue()
+        )
+        await interaction.channel.send(embed=embed, view=RankSelectView())
+        await interaction.response.send_message("Menu pro výběr ranků bylo odesláno!", ephemeral=True)
+
+async def setup(bot):
+    await bot.add_cog(ChatReviveCog(bot))
