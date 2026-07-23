@@ -352,7 +352,7 @@ QUESTIONS = {
         {"q": "Který fyzik formuloval obecnou teorii relativity? 🧠", "a": ["albert einstein", "einstein"], "xp": 1000},
         {"q": "Jaké je hlavní město Maroka? 🇲🇦", "a": ["rabat"], "xp": 1000},
         {"q": "Kolik bitů tvoří jeden Byte (bajt)? 💻", "a": ["8", "osm"], "xp": 1000},
-        {"q": "Jaké je hlavní město Vietnamu? 🇻🇳", "a": ["hanoj", "hanoi"], "xp": 1000}
+        {"q": "Jaké je hlavní město Vietnamu? 🇻🇳", "a": ["hanoj", "hanoi"], "xp": 1000},
         {"q": "Jaké je hlavní město Kanady? 🇨🇦", "a": ["ottawa"], "xp": 1000},
         {"q": "Jaké je chemické označení pro zlato? 🧪", "a": ["au"], "xp": 1000},
         {"q": "Ve kterém roce byla podepsána Deklarace nezávislosti USA? 📜", "a": ["1776"], "xp": 1000},
