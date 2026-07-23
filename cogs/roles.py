@@ -450,7 +450,7 @@ class ChatReviveCog(commands.Cog):
 
         embed = discord.Embed(
             title="⚡ CHAT REVIVE - KVÍZ ⚡",
-            description=f"**{question_text}**\n\nNapiš odpověď přímo do chatu!\n*(Máš na to 30 sekund)*",
+            description=f"**{question_text}**\n\nNapiš odpověď přímo do chatu!\n*(Máš na to 5 minut)*",
             color=color
         )
         embed.add_field(name="Obtížnost", value=diff_label, inline=True)
@@ -467,7 +467,7 @@ class ChatReviveCog(commands.Cog):
             return any(ans in user_ans for ans in correct_answers)
 
         try:
-            winner_msg = await self.bot.wait_for('message', timeout=30.0, check=check)
+            winner_msg = await self.bot.wait_for('message', timeout=300.0, check=check)
         except asyncio.TimeoutError:
             self.active_questions[channel_id] = False
             timeout_embed = discord.Embed(
