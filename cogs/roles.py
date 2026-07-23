@@ -396,42 +396,54 @@ QUESTIONS = {
 }
 
 # -------------------------------------------------------------------
-# DISCORD COG & LOGIKA PRO CHAT REVIVE (OTÁZKY)
+# CHAT REVIVE COG TŘÍDA
 # -------------------------------------------------------------------
 
 class ChatReviveCog(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.active_questions = {}  # channel_id: True/False
+        self.active_questions = {}
 
     @app_commands.command(name="revive", description="Spustí kvízovou otázku pro oživení chatu")
-    async def revive(self, interaction: discord.Interaction):
+    @app_commands.choices(difficulty=[
+        app_commands.Choice(name="🎲 Náhodná obtížnost", value="random"),
+        app_commands.Choice(name="🟢 Lehká (Easy)", value="easy"),
+        app_commands.Choice(name="🟡 Střední (Medium)", value="medium"),
+        app_commands.Choice(name="🔴 Těžká (Hard)", value="hard"),
+        app_commands.Choice(name="🟣 Ultra Těžká (Ultra Hard)", value="ultrahard")
+    ])
+    async def revive(self, interaction: discord.Interaction, difficulty: str = "random"):
         channel_id = interaction.channel.id
         
         if self.active_questions.get(channel_id, False):
             await interaction.response.send_message("V tomto kanálu už běží jedna otázka!", ephemeral=True)
             return
 
-        # Výběr obtížnosti podle šance
-        rand_val = random.random()
-        if rand_val < 0.40:
-            difficulty = "easy"
-            diff_label = "🟢 LEHKÁ"
-            color = discord.Color.green()
-        elif rand_val < 0.75:
-            difficulty = "medium"
-            diff_label = "🟡 STŘEDNÍ"
-            color = discord.Color.gold()
-        elif rand_val < 0.95:
-            difficulty = "hard"
-            diff_label = "🔴 TĚŽKÁ"
-            color = discord.Color.red()
+        # Určení obtížnosti (buď zvolená, nebo náhodná)
+        if difficulty == "random":
+            rand_val = random.random()
+            if rand_val < 0.40:
+                selected_diff = "easy"
+            elif rand_val < 0.75:
+                selected_diff = "medium"
+            elif rand_val < 0.95:
+                selected_diff = "hard"
+            else:
+                selected_diff = "ultrahard"
         else:
-            difficulty = "ultrahard"
-            diff_label = "🟣 ULTRA TĚŽKÁ"
-            color = discord.Color.purple()
+            selected_diff = difficulty
 
-        question_data = random.choice(QUESTIONS[difficulty])
+        # Nastavení vizuálu podle vybrané obtížnosti
+        diff_config = {
+            "easy": ("🟢 LEHKÁ", discord.Color.green()),
+            "medium": ("🟡 STREDNÍ", discord.Color.gold()),
+            "hard": ("🔴 TĚŽKÁ", discord.Color.red()),
+            "ultrahard": ("🟣 ULTRA TĚŽKÁ", discord.Color.purple())
+        }
+        
+        diff_label, color = diff_config[selected_diff]
+
+        question_data = random.choice(QUESTIONS[selected_diff])
         question_text = question_data["q"]
         correct_answers = question_data["a"]
         xp_reward = question_data["xp"]
@@ -480,16 +492,5 @@ class ChatReviveCog(commands.Cog):
         )
         await interaction.channel.send(embed=win_embed)
 
-    @app_commands.command(name="setup_brawl_ranks", description="Odesle menu pro vyber Brawl Stars ranku")
-    @commands.has_permissions(administrator=True)
-    async def setup_brawl_ranks(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="🏆 BRAWL STARS RANKY",
-            description="Vyber si svůj aktuální rank v Brawl Stars z menu níže.\nPo výběru ti bude automaticky přidělena příslušná role na serveru!",
-            color=discord.Color.og_shapes() if hasattr(discord.Color, "og_shapes") else discord.Color.blue()
-        )
-        await interaction.channel.send(embed=embed, view=RankSelectView())
-        await interaction.response.send_message("Menu pro výběr ranků bylo odesláno!", ephemeral=True)
-
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(ChatReviveCog(bot))
