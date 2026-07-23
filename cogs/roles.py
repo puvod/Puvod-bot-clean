@@ -10,7 +10,66 @@ def normalize_text(text: str) -> str:
     text = text.lower().strip()
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
 
-# ID Brawl Stars Ranků
+# -------------------------------------------------------------------
+# STARÉ TRÍDY PRO DYNAMICKÁ MENU (Potřebné pro main.py a persistent views)
+# -------------------------------------------------------------------
+
+class RoleModal(discord.ui.Modal, title='Vytvořit menu rolí'):
+    title_input = discord.ui.TextInput(label='Nadpis Embedu', placeholder='VÝBÉR ROLÍ')
+    desc_input = discord.ui.TextInput(label='Popis', style=discord.TextStyle.paragraph, placeholder='Vyber si své role...')
+    roles_input = discord.ui.TextInput(label='ID rolí (oddělené čárkou)', placeholder='1234567890, 0987654321')
+
+    async def on_submit(self, interaction: discord.Interaction):
+        role_ids = [int(i.strip()) for i in self.roles_input.value.split(',')]
+        roles = [interaction.guild.get_role(rid) for rid in role_ids if interaction.guild.get_role(rid)]
+        
+        embed = discord.Embed(title=self.title_input.value, description=self.desc_input.value, color=discord.Color.blue())
+        view = CombinedRoleView(roles)
+        
+        await interaction.channel.send(embed=embed, view=view)
+        await interaction.response.send_message("Menu bylo odesláno!", ephemeral=True)
+
+class CombinedRoleView(discord.ui.View):
+    def __init__(self, roles=None):
+        super().__init__(timeout=None)
+        if roles:
+            for role in roles[:5]:
+                self.add_item(RoleButton(role))
+            if len(roles) > 5:
+                self.add_item(RoleSelect(roles[5:]))
+
+class RoleButton(discord.ui.Button):
+    def __init__(self, role):
+        super().__init__(label=role.name, style=discord.ButtonStyle.primary, custom_id=f"btn_{role.id}")
+        self.role_id = role.id
+
+    async def callback(self, interaction: discord.Interaction):
+        role = interaction.guild.get_role(self.role_id)
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            await interaction.response.send_message(f"Odebral jsem: {role.name}", ephemeral=True)
+        else:
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message(f"Přidal jsem: {role.name}", ephemeral=True)
+
+class RoleSelect(discord.ui.Select):
+    def __init__(self, roles):
+        options = [discord.SelectOption(label=r.name, value=str(r.id)) for r in roles]
+        super().__init__(placeholder="Další role...", options=options, custom_id="select_roles")
+
+    async def callback(self, interaction: discord.Interaction):
+        role = interaction.guild.get_role(int(self.values[0]))
+        if role in interaction.user.roles:
+            await interaction.user.remove_roles(role)
+            await interaction.response.send_message(f"Odebral jsem: {role.name}", ephemeral=True)
+        else:
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message(f"Přidal jsem: {role.name}", ephemeral=True)
+
+# -------------------------------------------------------------------
+# NOVÝ SYSTÉM PRO BRAWL STARS RANKY
+# -------------------------------------------------------------------
+
 BRAWL_RANKS = {
     1464661112565006459: "Gold",
     1463231879414157446: "Diamond",
@@ -20,10 +79,9 @@ BRAWL_RANKS = {
     1463232574313988168: "PRO"
 }
 
-# View pro výběr Brawl Stars ranků (pro běžné hráče)
 class RankSelectView(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=None) # persistentní tlačítka / menu
+        super().__init__(timeout=None)
 
     @discord.ui.select(
         placeholder="Vyber si svůj Brawl Stars Rank...",
@@ -47,7 +105,6 @@ class RankSelectView(discord.ui.View):
             await interaction.response.send_message("Tato role nebyla na serveru nalezena!", ephemeral=True)
             return
 
-        # Najdeme všechny ostatní rank role, které uživatel má, a odebereme je (aby měl vždy max 1 rank)
         roles_to_remove = [
             guild.get_role(rid) for rid in BRAWL_RANKS.keys() 
             if rid != selected_role_id and guild.get_role(rid) in member.roles
@@ -56,7 +113,6 @@ class RankSelectView(discord.ui.View):
         if roles_to_remove:
             await member.remove_roles(*roles_to_remove)
 
-        # Pokud už tuto roli měl, odebereme ji (přepínač), jinak ji přidáme
         if selected_role in member.roles:
             await member.remove_roles(selected_role)
             await interaction.response.send_message(f"Odebral jsem ti rank: **{selected_role.name}**", ephemeral=True)
@@ -64,7 +120,10 @@ class RankSelectView(discord.ui.View):
             await member.add_roles(selected_role)
             await interaction.response.send_message(f"Nastavil jsem ti rank: **{selected_role.name}** 🏆", ephemeral=True)
 
-# Databáze otázek pro Revive
+# -------------------------------------------------------------------
+# DATABÁZE OTÁZEK PRO CHAT REVIVE
+# -------------------------------------------------------------------
+
 QUESTIONS = {
     "easy": [
         {"q": "Jaké je hlavní město České republiky? 🇨🇿", "a": ["praha"], "xp": 100},
@@ -136,16 +195,20 @@ QUESTIONS = {
         {"q": "Slovo pozpátku: Napiš **KONTRAREVOLUCE** pozpátku! 🔄", "a": ["eculoverartnok"], "xp": 1000},
         {"q": "Která je nejlidnatější vnitrozemská zem na světě (nemá přístup k moři)? 🌍", "a": ["etiopie"], "xp": 1000},
         {"q": "Který fyzik formuloval obecnou teorii relativity? 🧠", "a": ["albert einstein", "einstein"], "xp": 1000},
-        {"q": "Jaké je hlavní město Maroka? 🇲🇦", "a": ["rabat"], "xp": 1000},
+        {"q": "Jaké je hlavní město MarOKA? 🇲🇦", "a": ["rabat"], "xp": 1000},
         {"q": "Kolik bitů tvoří jeden Byte (bajt)? 💻", "a": ["8", "osm"], "xp": 1000}
     ]
 }
+
+# -------------------------------------------------------------------
+# COG A PŘÍKAZY
+# -------------------------------------------------------------------
 
 class RolesCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # Příkaz !role nebo !roles – přístupný pro VŠECHNY hráče
+    # Textový příkaz !role / !roles pro vytvoření Brawl Stars výběru
     @commands.command(name="role", aliases=["roles"])
     async def role_cmd(self, ctx: commands.Context):
         embed = discord.Embed(
@@ -159,6 +222,11 @@ class RolesCog(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(RolesCog(bot))
+
+    @bot.tree.command(name="create-role-menu", description="Vytvoří interaktivní menu rolí")
+    @app_commands.checks.has_permissions(manage_messages=True)
+    async def create_role_menu(interaction: discord.Interaction):
+        await interaction.response.send_modal(RoleModal())
 
     @bot.tree.command(name="role", description="Vyber si svůj Brawl Stars rank")
     async def role_slash(interaction: discord.Interaction):
