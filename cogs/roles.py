@@ -364,8 +364,7 @@ QUESTIONS = {
         {"q": "Jak se jmenovala první umělá družice Země vypuštěná SSSR v roce 1957, která zahájila vesmírné závody Studené války? 🛰️", "a": ["sputnik 1", "sputnik"], "xp": 1000},
         {"q": "Jak se jmenoval sovětský vůdce, který vedl SSSR během Karibské krize v roce 1962? 🏛️", "a": ["nikita chruscov", "nikita chruščov", "chruscov", "chruščov"], "xp": 1000},
         {"q": "Které německé město bylo po 2. světové válce rozděleno do 4 okupačních sektorů a v roce 1961 v něm vyrostla zeď? 🧱", "a": ["berlin", "berlín"], "xp": 1000},
-        {"q": "Který americký prezident pronesl v roce 1987 u Berlínské zdi slavnou větu: 'Mister Gorbachev, tear down this wall!'? 🎙️", "a": ["ronald reagan", "reagan"], "xp": 1000}
-        # --- IT, PROGRAMOVÁNÍ A INFORMATIKA ---
+        {"q": "Který americký prezident pronesl v roce 1987 u Berlínské zdi slavnou větu: 'Mister Gorbachev, tear down this wall!'? 🎙️", "a": ["ronald reagan", "reagan"], "xp": 1000},        
         {"q": "Jaká je časová složitost v nejhorším případě (Worst-case) u algoritmu QuickSort v O-notaci? 💻", "a": ["o(n^2)", "o(n2)", "o(n**2)"], "xp": 1000},
         {"q": "Který britský matematik je považován za otce moderní počítačové vědy a prolomil kód Enigma? 🧠", "a": ["alan turing", "turing"], "xp": 1000},
         {"q": "Jak se jmenuje princip v objektově orientovaném programování, kdy třída přebírá vlastnosti a metody jiné třídy? 🏗️", "a": ["dedicnost", "dědičnost", "inheritance"], "xp": 1000},
