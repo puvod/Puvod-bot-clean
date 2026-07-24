@@ -416,13 +416,13 @@ class ChatReviveCog(commands.Cog):
 
     @app_commands.command(name="revive", description="Spustí kvízovou otázku pro oživení chatu")
     @app_commands.choices(difficulty=[
-        app_commands.Choice(name="🎲 Náhodná obtížnost", value="random"),
-        app_commands.Choice(name="🟢 Lehká (Easy)", value="easy"),
-        app_commands.Choice(name="🟡 Střední (Medium)", value="medium"),
-        app_commands.Choice(name="🔴 Těžká (Hard)", value="hard"),
-        app_commands.Choice(name="🟣 Ultra Těžká (Ultra Hard)", value="ultrahard"),
-        app_commands.Choice(name="⚽ Fotbalové)", value="fotball")
-    ])
+    app_commands.Choice(name="🎲 Náhodná obtížnost", value="random"),
+    app_commands.Choice(name="🟢 Lehká (Easy)", value="easy"),
+    app_commands.Choice(name="🟡 Střední (Medium)", value="medium"),
+    app_commands.Choice(name="🔴 Těžká (Hard)", value="hard"),
+    app_commands.Choice(name="🟣 Ultra Těžká (Ultra Hard)", value="ultrahard"),
+    app_commands.Choice(name="⚽ Fotbalové", value="fotball")
+])
     async def revive(self, interaction: discord.Interaction, difficulty: str = "random"):
         channel_id = interaction.channel.id
         
