@@ -441,8 +441,10 @@ class ChatReviveCog(commands.Cog):
                 selected_diff = "hard"
             else:
                 selected_diff = "ultrahard"
-        else:
+            else:    
+        else:   selected_diff= "fotbalové"
             selected_diff = difficulty
+
 
         # Nastavení vizuálu podle vybrané obtížnosti
         diff_config = {
@@ -450,6 +452,7 @@ class ChatReviveCog(commands.Cog):
             "medium": ("🟡 STREDNÍ", discord.Color.gold()),
             "hard": ("🔴 TĚŽKÁ", discord.Color.red()),
             "ultrahard": ("🟣 ULTRA TĚŽKÁ", discord.Color.purple())
+            "Fotbalové": ("Fotbalové", discord.color.blue)
         }
         
         diff_label, color = diff_config[selected_diff]
