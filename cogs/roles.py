@@ -349,6 +349,7 @@ QUESTIONS = {
         {"q": "Jaké je hlavní město Lichtenštejunska? 🇱🇮", "a": ["vaduz"], "xp": 1000},
         {"q": "Slovo pozpátku: Napiš **NEJNEOBHOSPODAŘOVATELNĚJŠÍMI** pozpátku! 🔄", "a": ["imijsotelavodapsohboennejen"], "xp": 1000},
         {"q": "Slovo pozpátku: Napiš **RESTRUKTURALIZACE** pozpátku! 🔄", "a": ["ecazilarutkurtser"], "xp": 1000}
+        
         {"q": "Jak se jmenuje slavná Shakespeareova hra, kde vystupuje princezna Dánska a zazní část 'Být, či nebýt'? 🎭", "a": ["hamlet"], "xp": 1000},
         {"q": "Který britský evoluční biolog napsal v roce 1976 přelomovou knihu 'Sebedestruktivní / Sobecký gen' (The Selfish Gene)? 🧬", "a": ["richard dawkins", "dawkins"], "xp": 1000},
         {"q": "Jak se jmenuje postava z Shakespearova Kupce benátského, která požadovala liber masa jako splátku dluhu? 🎭", "a": ["shylock"], "xp": 1000},
