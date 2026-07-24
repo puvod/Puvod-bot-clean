@@ -416,13 +416,13 @@ class ChatReviveCog(commands.Cog):
 
     @app_commands.command(name="revive", description="Spustí kvízovou otázku pro oživení chatu")
     @app_commands.choices(difficulty=[
-    app_commands.Choice(name="🎲 Náhodná obtížnost", value="random"),
-    app_commands.Choice(name="🟢 Lehká (Easy)", value="easy"),
-    app_commands.Choice(name="🟡 Střední (Medium)", value="medium"),
-    app_commands.Choice(name="🔴 Těžká (Hard)", value="hard"),
-    app_commands.Choice(name="🟣 Ultra Těžká (Ultra Hard)", value="ultrahard"),
-    app_commands.Choice(name="⚽ Fotbalové", value="football")
-])
+        app_commands.Choice(name="🎲 Náhodná obtížnost", value="random"),
+        app_commands.Choice(name="🟢 Lehká (Easy)", value="easy"),
+        app_commands.Choice(name="🟡 Střední (Medium)", value="medium"),
+        app_commands.Choice(name="🔴 Těžká (Hard)", value="hard"),
+        app_commands.Choice(name="🟣 Ultra Těžká (Ultra Hard)", value="ultrahard"),
+        app_commands.Choice(name="⚽ Fotbalové", value="football")
+    ])
     async def revive(self, interaction: discord.Interaction, difficulty: str = "random"):
         channel_id = interaction.channel.id
         
@@ -441,17 +441,15 @@ class ChatReviveCog(commands.Cog):
                 selected_diff = "hard"
             else:
                 selected_diff = "ultrahard"
-            else:    
-        else:   selected_diff= "fotbalové"
+        else:
             selected_diff = difficulty
-
 
         # Nastavení vizuálu podle vybrané obtížnosti
         diff_config = {
             "easy": ("🟢 LEHKÁ", discord.Color.green()),
-            "medium": ("🟡 STREDNÍ", discord.Color.gold()),
+            "medium": ("🟡 STŘEDNÍ", discord.Color.gold()),
             "hard": ("🔴 TĚŽKÁ", discord.Color.red()),
-            "ultrahard": ("🟣 ULTRA TĚŽKÁ", discord.Color.purple())
+            "ultrahard": ("🟣 ULTRA TĚŽKÁ", discord.Color.purple()),
             "football": ("⚽ FOTBALOVÉ", discord.Color.blue())
         }
         
