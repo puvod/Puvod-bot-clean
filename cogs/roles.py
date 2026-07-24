@@ -452,7 +452,7 @@ class ChatReviveCog(commands.Cog):
             "medium": ("🟡 STREDNÍ", discord.Color.gold()),
             "hard": ("🔴 TĚŽKÁ", discord.Color.red()),
             "ultrahard": ("🟣 ULTRA TĚŽKÁ", discord.Color.purple())
-            "Fotbalové": ("Fotbalové", discord.color.blue)
+            "football": ("⚽ FOTBALOVÉ", discord.Color.blue())
         }
         
         diff_label, color = diff_config[selected_diff]
