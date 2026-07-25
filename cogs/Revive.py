@@ -212,7 +212,7 @@ QUESTIONS = {
         {"q": "Jak se jmenovala první počítačová síť z roku 1969, která byla předchůdcem Internetu? 🌐", "a": ["arpanet"], "xp": 1000},
         {"q": "Které číslo je v hexadecimální (šestnáctkové) soustavě reprezentováno řetězcem 'FF'? 🔢", "a": ["255"], "xp": 1000},
         {"q": "Jaké bylo původní kódové označení (codename) pro Windows 95 během vývoje? 💻", "a": ["chicago"], "xp": 1000}
-    ]
+    ],
     "football": [
         {"q": "Kolik minut trvá standardní fotbalový zápas bez prodloužení? ⏱️", "a": ["90"], "xp": 150},
         {"q": "Který národní tým vyhrál Mistrovství světa ve fotbale v roce 2022 v Kataru? 🏆", "a": ["argentina"], "xp": 300},
