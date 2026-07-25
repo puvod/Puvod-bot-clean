@@ -14,7 +14,6 @@ def normalize_text(text: str) -> str:
 # DATABÁZE OTÁZEK PRO CHAT REVIVE
 # -------------------------------------------------------------------
 QUESTIONS = {
-    # EASY (Základní všeobecný přehled, historie, geografie, rychlá matematika)
     "easy": [
         {"q": "Jaké je hlavní město Austrálie? (Pozor, Sydney to není!) 🇦🇺", "a": ["canberra"], "xp": 100},
         {"q": "Který chemický prvek má značku **Au**? 🥇", "a": ["zlato"], "xp": 100},
@@ -71,8 +70,6 @@ QUESTIONS = {
         {"q": "Rychlá matematika: Kolik je **12 x 12**? 🧮", "a": ["144"], "xp": 100},
         {"q": "Jaké je hlavní město Itálie? 🇮🇹", "a": ["rim", "řím"], "xp": 100}
     ],
-
-    # MEDIUM (Pokročilejší vědomosti, věda, historie, geografie)
     "medium": [
         {"q": "Jak se jmenovala karibská krize z roku 1962 ohledně raket na Kubě? 🚀", "a": ["kubanska", "kubánská", "kubanska krize", "kubánská krize"], "xp": 250},
         {"q": "Jak se jmenovala dohoda z roku 1938, ve které velmoci podstoupily české pohraničí Německu? 📜", "a": ["mnichovska dohoda", "mnichovská dohoda", "mnichovska", "mnichovská"], "xp": 250},
@@ -129,8 +126,6 @@ QUESTIONS = {
         {"q": "Jaké je hlavní město Finska? 🇫🇮", "a": ["helsinky", "helsinki"], "xp": 250},
         {"q": "Který vědec navrhl teorii relativity? ⚛️", "a": ["albert einstein", "einstein"], "xp": 250}
     ],
-
-    # HARD (Chytáky, detailní geografie, těžká historie, kultura a literatura)
     "hard": [
         {"q": "Jaké je zákonodárné hlavní město Jihoafrické republiky (JAR)? 🇿🇦", "a": ["kapske mesto", "kapské město", "cape town"], "xp": 500},
         {"q": "Které město bylo hlavním městem Kazachstánu před Astanou (do r. 1997)? 🇰🇿", "a": ["almaty", "alma-ata", "alma ata"], "xp": 500},
@@ -173,8 +168,6 @@ QUESTIONS = {
         {"q": "Která země darovala USA slavnou Sochu Svobody? 🗽", "a": ["francie"], "xp": 500},
         {"q": "Jaká je chemická značka pro zlato, stříbro a měď (v tomto pořadí bez mezer/čárek)? 🧪", "a": ["auagcu"], "xp": 500}
     ],
-
-    # ULTRA HARD (Široký všeobecný přehled: Historie, Přírodopis, Geografie, Kultura, Věda, Osobnosti)
     "ultrahard": [
         # --- HISTORIE A VOJENSTVÍ ---
         {"q": "Jak se jmenoval úplně první pes, který se vrátil z vesmíru ŽIVÝ (společně s Bělkou)? 🐕", "a": ["strelka", "střelka"], "xp": 1000},
@@ -220,8 +213,6 @@ QUESTIONS = {
         {"q": "Které číslo je v hexadecimální (šestnáctkové) soustavě reprezentováno řetězcem 'FF'? 🔢", "a": ["255"], "xp": 1000},
         {"q": "Jaké bylo původní kódové označení (codename) pro Windows 95 během vývoje? 💻", "a": ["chicago"], "xp": 1000}
     ]
-}
-
     "football": [
         {"q": "Kolik minut trvá standardní fotbalový zápas bez prodloužení? ⏱️", "a": ["90"], "xp": 150},
         {"q": "Který národní tým vyhrál Mistrovství světa ve fotbale v roce 2022 v Kataru? 🏆", "a": ["argentina"], "xp": 300},
