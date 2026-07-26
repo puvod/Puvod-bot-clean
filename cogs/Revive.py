@@ -14,6 +14,7 @@ def normalize_text(text: str) -> str:
 # DATABÁZE OTÁZEK PRO CHAT REVIVE
 # -------------------------------------------------------------------
 QUESTIONS = {
+    # EASY (Základní všeobecný přehled, historie, geografie, rychlá matematika)
     "easy": [
         {"q": "Jaké je hlavní město Austrálie? (Pozor, Sydney to není!) 🇦🇺", "a": ["canberra"], "xp": 100},
         {"q": "Který chemický prvek má značku **Au**? 🥇", "a": ["zlato"], "xp": 100},
@@ -59,17 +60,18 @@ QUESTIONS = {
         {"q": "Kdo byl prvním člověkem, který vstoupil na povrch Měsíce (1969)? 🌕", "a": ["neil armstrong", "armstrong"], "xp": 100},
         {"q": "Která krevní skupina je považována za univerzálního dárce? 🩸", "a": ["0-", "0 negativni", "0 negativní", "0 minus", "0"], "xp": 100},
         {"q": "Ve kterém století proběhla Bitva na Bílé hoře (1620)? ⚔️", "a": ["17", "17.", "sedmnactem", "sedmnáctém"], "xp": 100},
-        {"q": "Jak se jmenoval rakouský arcivévoda, jehož atentát v Sarajevě rozpoutal 1. světovou válku? 👑", "a": ["frantisek ferdinand", "františek ferdinand", "ferdinand"], "xp": 100},
-        # -- NOVÉ PRVKY DO EASY --
+        {"q": "Jak se jmenoval rakouský arcivévoda, jehož atentát v Sarajevě rozpoutal 1. světovou válku? 👑", "a": ["frantisek ferdinand", "františek ferdinand", "ferdinand", "frantisek ferdinand d'este"], "xp": 100},
         {"q": "Která řeka je nejdelší v České republice? 🌊", "a": ["vltava"], "xp": 100},
         {"q": "Jaké je hlavní město Španělska? 🇪🇸", "a": ["madrid"], "xp": 100},
         {"q": "Jak se nazývá samice od psa? 🐕", "a": ["fena"], "xp": 100},
         {"q": "Která planeta je nejblíže k naší Hvězdě (Slunci)? ☀️", "a": ["merkur"], "xp": 100},
-        {"q": "Jaká je chemická značka pro kyslík? 🧪", "a": ["o"], "xp": 100},
+        {"q": "Jaká je chemická značka pro kyslík? 🧪", "a": ["o", "o2", "kyslik", "kyslík"], "xp": 100},
         {"q": "Kolik minut má jedna celá hodina? ⏱️", "a": ["60"], "xp": 100},
         {"q": "Rychlá matematika: Kolik je **12 x 12**? 🧮", "a": ["144"], "xp": 100},
         {"q": "Jaké je hlavní město Itálie? 🇮🇹", "a": ["rim", "řím"], "xp": 100}
     ],
+
+    # MEDIUM (Pokročilejší vědomosti, věda, historie, geografie)
     "medium": [
         {"q": "Jak se jmenovala karibská krize z roku 1962 ohledně raket na Kubě? 🚀", "a": ["kubanska", "kubánská", "kubanska krize", "kubánská krize"], "xp": 250},
         {"q": "Jak se jmenovala dohoda z roku 1938, ve které velmoci podstoupily české pohraničí Německu? 📜", "a": ["mnichovska dohoda", "mnichovská dohoda", "mnichovska", "mnichovská"], "xp": 250},
@@ -103,7 +105,7 @@ QUESTIONS = {
         {"q": "Jak se jmenuje hlavní tepna lidského těla vycházející ze srdce? 🩸", "a": ["aorta"], "xp": 250},
         {"q": "Jaké je de facto hlavní (sídlem vlády) město Švýcarska? 🇨🇭", "a": ["bern"], "xp": 250},
         {"q": "Která země je nejlidnatějším vnitrozemským státem na světě? 🌍", "a": ["etiopie"], "xp": 250},
-        {"q": "Jaká je přesná rychlost světla ve vakuu v km/s? (Zaokrouhleno) ⚡", "a": ["299792", "299 792"], "xp": 250},
+        {"q": "Jaká je přibližná rychlost světla ve vakuu v tisících km/s? (např. 300 000) ⚡", "a": ["300000", "299792", "300 000", "299 792"], "xp": 250},
         {"q": "Jak se jmenovala tajná operace atentátu na Reinharda Heydricha v roce 1942? 🎖️", "a": ["anthropoid", "operace anthropoid"], "xp": 250},
         {"q": "Který fyzik jako první v roce 1932 objevil neutron? ⚛️", "a": ["james chadwick", "chadwick"], "xp": 250},
         {"q": "Jaká je chemická značka pro draslík (Kalium)? 🧪", "a": ["k"], "xp": 250},
@@ -117,7 +119,6 @@ QUESTIONS = {
         {"q": "Jak se jmenuje nejmenší kost v lidském těle? 🦴", "a": ["strminek", "třmínek", "strmínek"], "xp": 250},
         {"q": "Který zvířecí druh je považován za nejrychlejšího tvora na Zemi při střemhlavém letu? 🦅", "a": ["sokol stahovavy", "sokol stěhovavý", "sokol"], "xp": 250},
         {"q": "Jak se jmenuje největší zvíře, které kdy žilo na Zemi? 🐋", "a": ["vrastenec obrovsky", "vráskavec obrovský", "plejtvak obrovsky", "plejtvák obrovský"], "xp": 250},
-        # -- NOVÉ PRVKY DO MEDIUM --
         {"q": "Který ostrovní stát v Středozemním moři má hlavní město Vallettu? 🇲🇹", "a": ["malta"], "xp": 250},
         {"q": "Která planeta je čtvrtá od Slunce a říká se jí 'Rudá planeta'? 🪐", "a": ["mars"], "xp": 250},
         {"q": "Ve kterém roce došlo k havárii jaderné elektrárny Černobyl? ☢️", "a": ["1986"], "xp": 250},
@@ -126,6 +127,8 @@ QUESTIONS = {
         {"q": "Jaké je hlavní město Finska? 🇫🇮", "a": ["helsinky", "helsinki"], "xp": 250},
         {"q": "Který vědec navrhl teorii relativity? ⚛️", "a": ["albert einstein", "einstein"], "xp": 250}
     ],
+
+    # HARD (Chytáky, detailní geografie, těžká historie, kultura a literatura)
     "hard": [
         {"q": "Jaké je zákonodárné hlavní město Jihoafrické republiky (JAR)? 🇿🇦", "a": ["kapske mesto", "kapské město", "cape town"], "xp": 500},
         {"q": "Které město bylo hlavním městem Kazachstánu před Astanou (do r. 1997)? 🇰🇿", "a": ["almaty", "alma-ata", "alma ata"], "xp": 500},
@@ -139,7 +142,7 @@ QUESTIONS = {
         {"q": "Jaké je hlavní město Keni? 🇰🇪", "a": ["nairobi"], "xp": 500},
         {"q": "Jaké je hlavní město Lichtenštejunska? 🇱🇮", "a": ["vaduz"], "xp": 500},
         {"q": "Slovo pozpátku: Napiš **RESTRUKTURALIZACE** pozpátku! 🔄", "a": ["ecazilarutkurtser"], "xp": 500},
-        {"q": "Jak se jmenuje slavná Shakespeareova hra, kde vystupuje princezna Dánska a zazní 'Být, či nebýt'? 🎭", "a": ["hamlet"], "xp": 500},
+        {"q": "Jak se jmenuje slavná Shakespeareova hra, kde vystupuje princ dánský a zazní 'Být, či nebýt'? 🎭", "a": ["hamlet"], "xp": 500},
         {"q": "Který britský evoluční biolog napsal v roce 1976 knihu 'Sobecký gen'? 🧬", "a": ["richard dawkins", "dawkins"], "xp": 500},
         {"q": "Jak se jmenuje postava z Shakespearova Kupce benátského, která požadovala liber masa jako splátku? 🎭", "a": ["shylock"], "xp": 500},
         {"q": "Který francouzský osvícenský filozof napsal satirický román Candide? 📖", "a": ["voltaire"], "xp": 500},
@@ -153,23 +156,23 @@ QUESTIONS = {
         {"q": "Ve kterém roce proběhla invaze vojsk Varšavské smlouvy do Československa? 🪖", "a": ["1968"], "xp": 500},
         {"q": "Jak se jmenovala první umělá družice Země vypuštěná SSSR v roce 1957? 🛰️", "a": ["sputnik 1", "sputnik"], "xp": 500},
         {"q": "Jak se jmenoval sovětský vůdce, který vedl SSSR během Karibské krize v roce 1962? 🏛️", "a": ["nikita chruscov", "nikita chruščov", "chruscov", "chruščov"], "xp": 500},
-        {"q": "Jak se jmenoval český malíř, architekt a spisovatel, který vytvořil obraz 'Slovanská epopej'? 🎨", "a": ["alfons mucha", "mucha"], "xp": 500},
+        {"q": "Jak se jmenoval český malíř a grafik, který vytvořil dílo 'Slovanská epopej'? 🎨", "a": ["alfons mucha", "mucha"], "xp": 500},
         {"q": "Která řeka je nejdelší na světě podle nejnovějších měření (překonává Nil)? 🌊", "a": ["amazonka"], "xp": 500},
         {"q": "Jak se jmenuje nejvyšší vodopád na světě (nachází se ve Venezuele)? 🌊", "a": ["angeluv vodopad", "angelův vodopád", "salto angel", "angel"], "xp": 500},
         {"q": "Který slavný norský malíř vytvořil ikonický obraz 'Výkřik' (Scream)? 🖼️", "a": ["edvard munch", "munch"], "xp": 500},
-        {"q": "Jak se jmenovala římská provincie na území dnešního Francie a Belgie? 🛡️", "a": ["galie"], "xp": 500},
+        {"q": "Jak se jmenovala římská provincie na území dnešní Francie a Belgie? 🛡️", "a": ["galie"], "xp": 500},
         {"q": "Který slavný polský astronom dokázal, že Země obíhá kolem Slunce? 🌌", "a": ["mikulas kopernik", "mikuláš koperník", "kopernik", "koperník"], "xp": 500},
-        # -- NOVÉ PRVKY DO HARD --
         {"q": "Které město v Kanadě je druhé největší a hovoří se v něm převážně francouzsky? 🇨🇦", "a": ["montreal"], "xp": 500},
-        {"q": "Jak se jmenoval perský král, kterého Alexander Veliký porazil v bitvě u Gaugamél? ⚔️", "a": ["dareios iii", "dareios 3", "darios iii", "dareios"], "xp": 500},
-        {"q": "Který slavný objevitel jako první obeplul Zemi (i když během výpravy zemřel)? ⛵", "a": ["fernao de magalhaes", "fernando magalhaes", "magalhaes", "magellan"], "xp": 500},
+        {"q": "Jak se jmenoval perský král, kterého Alexandr Veliký porazil v bitvě u Gaugamél? ⚔️", "a": ["dareios iii", "dareios 3", "darios iii", "dareios"], "xp": 500},
+        {"q": "Který slavný objevitel jako první vedením výpravy obeplul Zemi (i když během ní zemřel)? ⛵", "a": ["fernao de magalhaes", "fernando magalhaes", "magalhaes", "magellan"], "xp": 500},
         {"q": "Ve kterém roce proběhla Velká francouzská revoluce (dobytí Bastily)? 📜", "a": ["1789"], "xp": 500},
         {"q": "Jak se jmenuje nejvyšší hora Afriky? 🏔️", "a": ["kilimandzaro", "kilimandžáro"], "xp": 500},
         {"q": "Která země darovala USA slavnou Sochu Svobody? 🗽", "a": ["francie"], "xp": 500},
         {"q": "Jaká je chemická značka pro zlato, stříbro a měď (v tomto pořadí bez mezer/čárek)? 🧪", "a": ["auagcu"], "xp": 500}
     ],
+
+    # ULTRA HARD (Široký všeobecný přehled: Historie, Přírodopis, Geografie, Kultura, Věda, Osobnosti)
     "ultrahard": [
-        # --- HISTORIE A VOJENSTVÍ ---
         {"q": "Jak se jmenoval úplně první pes, který se vrátil z vesmíru ŽIVÝ (společně s Bělkou)? 🐕", "a": ["strelka", "střelka"], "xp": 1000},
         {"q": "Jaké je přesné kódové označení (písmeno a číslo) první německé ponorky potopené ve 2. světové válce? ⚓", "a": ["u-27", "u27"], "xp": 1000},
         {"q": "Jak se jmenovala vlajková loď Kryštofa Kolumba při jeho první výpravě v roce 1492? ⛵", "a": ["santa maria"], "xp": 1000},
@@ -179,34 +182,26 @@ QUESTIONS = {
         {"q": "Ve kterém roce byl spáchán atentát na amerického prezidenta Johna F. Kennedyho v Dallasu? 📜", "a": ["1963"], "xp": 1000},
         {"q": "Ve kterém roce byla podepsána Magna Charta Libertatum v Anglii? 📜", "a": ["1215"], "xp": 1000},
         {"q": "Který švédský král padl v bitvě u Lützenu v roce 1632 během Třicetileté války? ⚔️", "a": ["gustav ii adolf", "gustav adolf", "gustav 2 adolf"], "xp": 1000},
-
-        # --- GEOGRAFIE A EXTRÉMY ---
         {"q": "Jaké je hlavní město Myanmaru (Barmy)? (Není to Rangún!) 🇲🇲", "a": ["naypyidaw", "najpijto"], "xp": 1000},
-        {"q": "Jaké je oficiální správní/hlavní město Bolívie (sídlo vlády je La Paz)? 🇧🇴", "a": ["sucre"], "xp": 1000},
+        {"q": "Jaké je oficiální ústavní/hlavní město Bolívie (sídlo vlády je La Paz)? 🇧🇴", "a": ["sucre"], "xp": 1000},
         {"q": "Jaké je hlavní město Šalamounových ostrovů? 🇸🇧", "a": ["honiara"], "xp": 1000},
-        {"q": "Jak se jmenuje nejlidnatější ostrov na světě (nachází se v Indonésii)? 🏝️", "a": ["java"], "xp": 1000},
-        {"q": "Které je nejchladnější obydlené místo na Zemi (vesnice na Sibiři)? ❄️", "a": ["ojmjakon", "oimjakon"], "xp": 1000},
+        {"q": "Jak se jmenuje nejlidnatější ostrov na světě (nachází se v Indonésii)? 🏝️", "a": ["java", "jáva"], "xp": 1000},
+        {"q": "Které je nejchladnější trvale obydlené místo na Zemi (vesnice na Sibiři)? ❄️", "a": ["ojmjakon", "oimjakon"], "xp": 1000},
         {"q": "Který vnitrozemský stát Jižní Ameriky nemá žádný přístup k moři (kromě Bolívie)? 🌎", "a": ["paraguay"], "xp": 1000},
         {"q": "Jaké je hlavní město Madagaskaru? 🇲🇬", "a": ["antananarivo"], "xp": 1000},
-
-        # --- PŘÍRODOPIS, FYZIKA A CHEMIE ---
-        {"q": "Jaké je atomové číslo (protonové číslo) Ununoctia / Oganessonu? ⚛️", "a": ["118"], "xp": 1000},
+        {"q": "Jaké je atomové číslo (protonové číslo) Oganessonu (Og)? ⚛️", "a": ["118"], "xp": 1000},
         {"q": "Jaká je přesná frekvence (v Hz) tónu komorního A (A4) podle mezinárodní normy ISO 16? 🎼", "a": ["440", "440hz", "440 hz"], "xp": 1000},
         {"q": "Jak se jmenuje největší žijící ještěr na světě (žije v Indonésii)? 🦎", "a": ["varan komodsky", "varan komodský"], "xp": 1000},
         {"q": "Který chemický prvek má nejvyšší bod tání ze všech kovů (přes 3400 °C)? 🧪", "a": ["wolfram"], "xp": 1000},
         {"q": "Jak se jmenuje vědní obor zabývající se studiem mechů a játrovek? 🌿", "a": ["bryologie"], "xp": 1000},
         {"q": "Která část lidského mozku je zodpovědná za koordinaci pohybů a rovnováhu? 🧠", "a": ["mozecek", "mozeček"], "xp": 1000},
-        {"q": "Jak se jmenuje hormon štítné žlázy, který obsahuje jód? 🩸", "a": ["thyroxin", "tiroxin"], "xp": 1000},
-
-        # --- KULTURA, ARCHITEKTURA A VÝZNAMNÉ OSOBNOSTI ---
+        {"q": "Jak se jmenuje hlavní hormon štítné žlázy, který obsahuje jód? 🩸", "a": ["thyroxin", "tiroxin"], "xp": 1000},
         {"q": "Kdo byl architektem, který navrhl ikonický vysílač a hotel na Ještědu? 🏔️", "a": ["karel hubacek", "karel hubáček", "hubacek", "hubáček"], "xp": 1000},
-        {"q": "Jak se jmenovala první manželka Jindřicha VIII., kvůli které odstoupil od katolické církve? 👑", "a": ["katerina aragonska", "kateřina aragonská"], "xp": 1000},
+        {"q": "Jak se jmenovala první manželka Jindřicha VIII., kvůli které se odtrhl od katolické církve? 👑", "a": ["katerina aragonska", "kateřina aragonská"], "xp": 1000},
         {"q": "Který český barokní skladatel složil slavné dílo 'Missa Sanctissimae Trinitatis'? 🎼", "a": ["jan dismas zelenka", "zelenka"], "xp": 1000},
         {"q": "Který španělský architekt navrhl slavnou baziliku Sagrada Família v Barceloně? 🏰", "a": ["antoni gaudi", "antoni gaudí", "gaudi", "gaudí"], "xp": 1000},
         {"q": "Kdo napsal slavný antický epos Ilias a Odysseia? 📖", "a": ["homer", "homér"], "xp": 1000},
         {"q": "Jak se jmenovala slavná římská gladiátorka / koncept gladiátorky (ženský ekvivalent)? 🗡️", "a": ["gladiatrix"], "xp": 1000},
-
-        # --- JAZYK, LOGIKA A TECH ---
         {"q": "Slovo pozpátku: Napiš **NEJNEOBHOSPODAŘOVATELNĚJŠÍMI** pozpátku! 🔄", "a": ["imijsotelavodapsohboennejen"], "xp": 1000},
         {"q": "Jaký je přesný chybový kód HTTP protokolu pro 'I'm a teapot' (Jsem čajová konvice)? ☕", "a": ["418"], "xp": 1000},
         {"q": "Jak se jmenovala první počítačová síť z roku 1969, která byla předchůdcem Internetu? 🌐", "a": ["arpanet"], "xp": 1000},
