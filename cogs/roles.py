@@ -13,16 +13,17 @@ def normalize_text(text: str) -> str:
 # -------------------------------------------------------------------
 
 class CombinedRoleView(discord.ui.View):
-    def __init__(self, roles: list[discord.Role]):
+    def __init__(self, roles: list[discord.Role] = None):
         super().__init__(timeout=None)
         
-        # Prvních 5 rolí dáme jako tlačítka
-        for role in roles[:5]:
-            self.add_item(RoleButton(role))
-            
-        # Zbytek rolí (od 6. výše) dáme do rozbalovacího menu
-        if len(roles) > 5:
-            self.add_item(RoleSelect(roles[5:]))
+        if roles:
+            # Prvních 5 rolí dáme jako tlačítka
+            for role in roles[:5]:
+                self.add_item(RoleButton(role))
+                
+            # Zbytek rolí (od 6. výše) dáme do rozbalovacího menu
+            if len(roles) > 5:
+                self.add_item(RoleSelect(roles[5:]))
 
 class RoleButton(discord.ui.Button):
     def __init__(self, role: discord.Role):
