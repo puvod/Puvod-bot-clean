@@ -139,5 +139,32 @@ class RolesCog(commands.Cog):
         await interaction.channel.send(embed=embed, view=view)
         await interaction.response.send_message("Brawl Stars menu bylo vytvořeno!", ephemeral=True)
 
+# -------------------------------------------------------------------
+# ROLES COG TŘÍDA
+# -------------------------------------------------------------------
+
+class RolesCog(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    # Příkaz pro vyvolání modalu s tvorbou rolí
+    @app_commands.command(name="create", description="Vytvoří vlastní menu pro výběr rolí")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def create_roles_menu(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(RoleModal())
+
+    # Příkaz pro spuštění Brawl Stars menu
+    @app_commands.command(name="brawlrankmenu", description="Pošle menu pro výběr Brawl Stars ranků")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def brawlrankmenu(self, interaction: discord.Interaction):
+        embed = discord.Embed(
+            title="⭐ BRAWL STARS RANKY ⭐",
+            description="Vyber si svůj aktuální rank v menu níže:",
+            color=discord.Color.gold()
+        )
+        view = RankSelectView()
+        await interaction.channel.send(embed=embed, view=view)
+        await interaction.response.send_message("Brawl Stars menu bylo vytvořeno!", ephemeral=True)
+
 async def setup(bot: commands.Bot):
     await bot.add_cog(RolesCog(bot))
