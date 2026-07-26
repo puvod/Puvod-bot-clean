@@ -3,25 +3,20 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-# Pomocná funkce pro odstranění diakritiky
 def normalize_text(text: str) -> str:
     text = text.lower().strip()
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
 
 # -------------------------------------------------------------------
-# PRVKY PRO ROLOVÉ MENU (Tlačítka + Dropdown)
+# PRVKY PRO VÝSLEDNÉ MENU S ROLEMI (Tlačítka + Dropdown)
 # -------------------------------------------------------------------
 
 class CombinedRoleView(discord.ui.View):
     def __init__(self, roles: list[discord.Role] = None):
         super().__init__(timeout=None)
-        
         if roles:
-            # Prvních 5 rolí dáme jako tlačítka
             for role in roles[:5]:
                 self.add_item(RoleButton(role))
-                
-            # Zbytek rolí (od 6. výše) dáme do rozbalovacího menu
             if len(roles) > 5:
                 self.add_item(RoleSelect(roles[5:]))
 
@@ -49,15 +44,8 @@ class RoleButton(discord.ui.Button):
 
 class RoleSelect(discord.ui.Select):
     def __init__(self, roles: list[discord.Role]):
-        options = [
-            discord.SelectOption(label=r.name, value=str(r.id)) 
-            for r in roles
-        ]
-        super().__init__(
-            placeholder="Další role...", 
-            options=options, 
-            custom_id="select_roles_extra"
-        )
+        options = [discord.SelectOption(label=r.name, value=str(r.id)) for r in roles]
+        super().__init__(placeholder="Další role...", options=options, custom_id="select_roles_extra")
 
     async def callback(self, interaction: discord.Interaction):
         role_id = int(self.values[0])
@@ -74,7 +62,64 @@ class RoleSelect(discord.ui.Select):
             await interaction.response.send_message(f"Přidal jsem ti roli: **{role.name}**", ephemeral=True)
 
 # -------------------------------------------------------------------
-# SYSTÉM PRO BRAWL STARS RANKY
+# KROK 2: VYBÍRÁTKO ROLÍ BEZ ID
+# -------------------------------------------------------------------
+
+class SetupRolePickerView(discord.ui.View):
+    def __init__(self, title: str, description: str):
+        super().__init__(timeout=60)
+        self.title = title
+        self.description = description
+
+    @discord.ui.select(
+        cls=discord.ui.RoleSelect,
+        placeholder="Vyber role pro toto menu...",
+        min_values=1,
+        max_values=10
+    )
+    async def select_roles(self, interaction: discord.Interaction, select: discord.ui.RoleSelect):
+        selected_roles = select.values
+        
+        embed = discord.Embed(
+            title=self.title,
+            description=self.description,
+            color=discord.Color.blue()
+        )
+        
+        view = CombinedRoleView(selected_roles)
+        
+        # Pošleme finální zprávu do kanálu
+        await interaction.channel.send(embed=embed, view=view)
+        await interaction.response.send_message("✅ Menu bylo úspěšně vytvořeno a odesláno do kanálu!", ephemeral=True)
+
+# -------------------------------------------------------------------
+# KROK 1: MODAL PRO NADPIS A VÍCEŘÁDKOVÝ POPIS
+# -------------------------------------------------------------------
+
+class CreateRoleMenuModal(discord.ui.Modal, title='Vytvořit menu rolí'):
+    title_input = discord.ui.TextInput(
+        label='Nadpis Embedu', 
+        placeholder='VÝBĚR ROLÍ',
+        required=True
+    )
+    desc_input = discord.ui.TextInput(
+        label='Popis (můžeš používat odřádkování)', 
+        style=discord.TextStyle.paragraph, 
+        placeholder='Vyber si své role v menu níže...\n\n• První řádek\n• Druhý řádek',
+        required=True
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        # Otevřeme rolovací selector na role
+        view = SetupRolePickerView(title=self.title_input.value, description=self.desc_input.value)
+        await interaction.response.send_message(
+            "Nyní níže v roletce naklikat role, které do menu patří:", 
+            view=view, 
+            ephemeral=True
+        )
+
+# -------------------------------------------------------------------
+# BRAWL STARS RANKY
 # -------------------------------------------------------------------
 
 BRAWL_RANKS = {
@@ -135,57 +180,10 @@ class RolesCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="create", description="Vytvoří menu s rolemi (vyber až 10 rolí)")
+    @app_commands.command(name="create", description="Vytvoří vlastní menu pro výběr rolí")
     @app_commands.checks.has_permissions(administrator=True)
-    @app_commands.describe(
-        nadpis="Nadpis hlavní zprávy",
-        popis="Popis zprávy",
-        role1="První role",
-        role2="Druhá role (volitelné)",
-        role3="Třetí role (volitelné)",
-        role4="Čtvrtá role (volitelné)",
-        role5="Pátá role (volitelné)",
-        role6="Šestá role (volitelné)",
-        role7="Sedmá role (volitelné)",
-        role8="Osmá role (volitelné)",
-        role9="Devátá role (volitelné)",
-        role10="Desátá role (volitelné)"
-    )
-    async def create_roles_menu(
-        self, 
-        interaction: discord.Interaction, 
-        nadpis: str,
-        popis: str,
-        role1: discord.Role,
-        role2: discord.Role = None,
-        role3: discord.Role = None,
-        role4: discord.Role = None,
-        role5: discord.Role = None,
-        role6: discord.Role = None,
-        role7: discord.Role = None,
-        role8: discord.Role = None,
-        role9: discord.Role = None,
-        role10: discord.Role = None
-    ):
-        # Vyfiltrujeme jen vyplněné role a odstraníme případné duplicity
-        input_roles = [r for r in [role1, role2, role3, role4, role5, role6, role7, role8, role9, role10] if r is not None]
-        
-        # Zachování pořadí bez duplicit
-        roles = []
-        for r in input_roles:
-            if r not in roles:
-                roles.append(r)
-
-        embed = discord.Embed(
-            title=nadpis, 
-            description=popis, 
-            color=discord.Color.blue()
-        )
-        
-        view = CombinedRoleView(roles)
-        
-        await interaction.channel.send(embed=embed, view=view)
-        await interaction.response.send_message("✅ Menu pro výběr rolí bylo úspěšně vytvořeno!", ephemeral=True)
+    async def create_roles_menu(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(CreateRoleMenuModal())
 
     @app_commands.command(name="brawlrankmenu", description="Pošle menu pro výběr Brawl Stars ranků")
     @app_commands.checks.has_permissions(administrator=True)
