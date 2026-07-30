@@ -8,12 +8,12 @@ def normalize_text(text: str) -> str:
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
 
 # -------------------------------------------------------------------
-# PRVKY PRO VÝSLEDNÉ MENU S ROLEMI (Tlačítka + Dropdown)
+# PERSISTENTNÍ PRVKY PRO ROLOVÉ MENU
 # -------------------------------------------------------------------
 
 class CombinedRoleView(discord.ui.View):
     def __init__(self, roles: list[discord.Role] = None):
-        super().__init__(timeout=None)
+        super().__init__(timeout=None)  # timeout=None = tlačítka fungují navždy!
         if roles:
             for role in roles[:5]:
                 self.add_item(RoleButton(role))
@@ -30,7 +30,10 @@ class RoleButton(discord.ui.Button):
         self.role_id = role.id
 
     async def callback(self, interaction: discord.Interaction):
-        role = interaction.guild.get_role(self.role_id)
+        # Vytáhneme ID rolí buď z objektu, nebo přímo z custom_id po restartu
+        role_id = getattr(self, "role_id", int(self.custom_id.replace("btn_role_", "")))
+        role = interaction.guild.get_role(role_id)
+        
         if not role:
             await interaction.response.send_message("Tato role už na serveru neexistuje!", ephemeral=True)
             return
@@ -62,64 +65,47 @@ class RoleSelect(discord.ui.Select):
             await interaction.response.send_message(f"Přidal jsem ti roli: **{role.name}**", ephemeral=True)
 
 # -------------------------------------------------------------------
-# KROK 2: VYBÍRÁTKO ROLÍ BEZ ID
+# MODAL PRO TVORBU MENU
 # -------------------------------------------------------------------
 
-class SetupRolePickerView(discord.ui.View):
-    def __init__(self, title: str, description: str):
-        super().__init__(timeout=60)
-        self.title = title
-        self.description = description
-
-    @discord.ui.select(
-        cls=discord.ui.RoleSelect,
-        placeholder="Vyber role pro toto menu...",
-        min_values=1,
-        max_values=10
-    )
-    async def select_roles(self, interaction: discord.Interaction, select: discord.ui.RoleSelect):
-        selected_roles = select.values
-        
-        embed = discord.Embed(
-            title=self.title,
-            description=self.description,
-            color=discord.Color.blue()
-        )
-        
-        view = CombinedRoleView(selected_roles)
-        
-        # Pošleme finální zprávu do kanálu
-        await interaction.channel.send(embed=embed, view=view)
-        await interaction.response.send_message("✅ Menu bylo úspěšně vytvořeno a odesláno do kanálu!", ephemeral=True)
-
-# -------------------------------------------------------------------
-# KROK 1: MODAL PRO NADPIS A VÍCEŘÁDKOVÝ POPIS
-# -------------------------------------------------------------------
-
-class CreateRoleMenuModal(discord.ui.Modal, title='Vytvořit menu rolí'):
+class RoleModal(discord.ui.Modal, title='Vytvořit menu rolí'):
     title_input = discord.ui.TextInput(
         label='Nadpis Embedu', 
-        placeholder='VÝBĚR ROLÍ',
-        required=True
+        placeholder='VÝBĚR ROLÍ'
     )
     desc_input = discord.ui.TextInput(
-        label='Popis (můžeš používat odřádkování)', 
+        label='Popis', 
         style=discord.TextStyle.paragraph, 
-        placeholder='Vyber si své role v menu níže...\n\n• První řádek\n• Druhý řádek',
-        required=True
+        placeholder='Vyber si své role...\n(můžeš řádkovat)'
+    )
+    roles_input = discord.ui.TextInput(
+        label='ID rolí (oddělené čárkou)', 
+        placeholder='1234567890, 0987654321'
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        # Otevřeme rolovací selector na role
-        view = SetupRolePickerView(title=self.title_input.value, description=self.desc_input.value)
-        await interaction.response.send_message(
-            "Nyní níže v roletce naklikat role, které do menu patří:", 
-            view=view, 
-            ephemeral=True
-        )
+        try:
+            role_ids = [int(i.strip()) for i in self.roles_input.value.split(',') if i.strip()]
+            roles = [interaction.guild.get_role(rid) for rid in role_ids if interaction.guild.get_role(rid)]
+            
+            if not roles:
+                await interaction.response.send_message("❌ Žádná z vložených ID rolí nebyla na serveru nalezena!", ephemeral=True)
+                return
+
+            embed = discord.Embed(
+                title=self.title_input.value, 
+                description=self.desc_input.value, 
+                color=discord.Color.blue()
+            )
+            view = CombinedRoleView(roles)
+            
+            await interaction.channel.send(embed=embed, view=view)
+            await interaction.response.send_message("✅ Menu bylo úspěšně vytvořeno a odesláno!", ephemeral=True)
+        except ValueError:
+            await interaction.response.send_message("❌ Zadaná ID rolí musí být čísla oddělená čárkami!", ephemeral=True)
 
 # -------------------------------------------------------------------
-# BRAWL STARS RANKY
+# SYSTÉM PRO BRAWL STARS RANKY
 # -------------------------------------------------------------------
 
 BRAWL_RANKS = {
@@ -169,7 +155,7 @@ class RankSelectView(discord.ui.View):
             await member.remove_roles(selected_role)
             await interaction.response.send_message(f"Odebral jsem ti rank: **{selected_role.name}**", ephemeral=True)
         else:
-            await member.add_roles(selected_role)
+            await interaction.user.add_roles(selected_role)
             await interaction.response.send_message(f"Nastavil jsem ti rank: **{selected_role.name}** 🏆", ephemeral=True)
 
 # -------------------------------------------------------------------
@@ -183,7 +169,7 @@ class RolesCog(commands.Cog):
     @app_commands.command(name="create", description="Vytvoří vlastní menu pro výběr rolí")
     @app_commands.checks.has_permissions(administrator=True)
     async def create_roles_menu(self, interaction: discord.Interaction):
-        await interaction.response.send_modal(CreateRoleMenuModal())
+        await interaction.response.send_modal(RoleModal())
 
     @app_commands.command(name="brawlrankmenu", description="Pošle menu pro výběr Brawl Stars ranků")
     @app_commands.checks.has_permissions(administrator=True)
