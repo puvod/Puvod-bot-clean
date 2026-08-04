@@ -30,7 +30,6 @@ class RoleButton(discord.ui.Button):
         self.role_id = role.id
 
     async def callback(self, interaction: discord.Interaction):
-        # Vytáhneme ID rolí buď z objektu, nebo přímo z custom_id po restartu
         role_id = getattr(self, "role_id", int(self.custom_id.replace("btn_role_", "")))
         role = interaction.guild.get_role(role_id)
         
@@ -165,6 +164,53 @@ class RankSelectView(discord.ui.View):
 class RolesCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_interaction(self, interaction: discord.Interaction):
+        """Globální zachytávač pro tlačítka rolí po restartu bota."""
+        if interaction.response.is_done():
+            return
+
+        if interaction.type == discord.InteractionType.component:
+            custom_id = interaction.data.get("custom_id", "")
+
+            # --- 1. ODCHYTÁVÁNÍ TLAČÍTEK Z /create MENU ---
+            if custom_id.startswith("btn_role_"):
+                try:
+                    role_id = int(custom_id.replace("btn_role_", ""))
+                    role = interaction.guild.get_role(role_id)
+
+                    if not role:
+                        await interaction.response.send_message("Tato role už na serveru neexistuje!", ephemeral=True)
+                        return
+
+                    if role in interaction.user.roles:
+                        await interaction.user.remove_roles(role)
+                        await interaction.response.send_message(f"Odebral jsem ti roli: **{role.name}**", ephemeral=True)
+                    else:
+                        await interaction.user.add_roles(role)
+                        await interaction.response.send_message(f"Přidal jsem ti roli: **{role.name}**", ephemeral=True)
+                except Exception as e:
+                    print(f"Chyba při zpracování tlačítka role: {e}")
+
+            # --- 2. ODCHYTÁVÁNÍ SELECT MENU Z /create (POKUD JE ROLÍ VÍCE NEŽ 5) ---
+            elif custom_id == "select_roles_extra":
+                try:
+                    selected_role_id = int(interaction.data.get("values", [])[0])
+                    role = interaction.guild.get_role(selected_role_id)
+
+                    if not role:
+                        await interaction.response.send_message("Tato role už na serveru neexistuje!", ephemeral=True)
+                        return
+
+                    if role in interaction.user.roles:
+                        await interaction.user.remove_roles(role)
+                        await interaction.response.send_message(f"Odebral jsem ti roli: **{role.name}**", ephemeral=True)
+                    else:
+                        await interaction.user.add_roles(role)
+                        await interaction.response.send_message(f"Přidal jsem ti roli: **{role.name}**", ephemeral=True)
+                except Exception as e:
+                    print(f"Chyba při zpracování select menu: {e}")
 
     @app_commands.command(name="create", description="Vytvoří vlastní menu pro výběr rolí")
     @app_commands.checks.has_permissions(administrator=True)

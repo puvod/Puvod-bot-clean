@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # Importujeme naše vlastní moduly
 from web import keep_alive
 from database import init_db
-from cogs.roles import CombinedRoleView  # Import pro registraci tlačítek
+from cogs.roles import RankSelectView  # Import pro Brawl Stars Ranky
 
 # 1. Načtení tokenu z .env souboru
 load_dotenv()
@@ -26,8 +26,8 @@ class MyBot(commands.Bot):
         init_db()
         print("🗄️ Databáze byla úspěšně inicializována.")
 
-        # Registrace Persistent View (tlačítka budou fungovat i po restartu)
-        self.add_view(CombinedRoleView())
+        # Registrace Persistent View pro Brawl Stars Ranky
+        self.add_view(RankSelectView())
         print("🔘 Persistentní tlačítka byla zaregistrována.")
 
         # Automatické načtení všech souborů ze složky cogs/
