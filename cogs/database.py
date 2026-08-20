@@ -46,8 +46,7 @@ class Database:
                 );
             """)
 
-            # 2. Automatické nahrání tvých zálohovaných dat při startu
-            # Roličky
+            # 2. Automatické nahrání zálohovaných dat při startu
             roles = [
                 '1463231879414157446', '1463232272164585474', '1463232392281198776',
                 '1463232501949399164', '1463232574313988168', '1463869188543217789',
@@ -61,7 +60,6 @@ class Database:
                     ON CONFLICT DO NOTHING
                 """, r_id)
 
-            # Nastavení serveru a počítadla
             await conn.execute("""
                 INSERT INTO guild_settings (guild_id, counting_channel_id, counting_time, current_number, current_streak, reset_on_fail) 
                 VALUES ('1463229014901657850', 1464000345561628743, '15:00', 20057, 11257, 0)
@@ -73,7 +71,6 @@ class Database:
                     reset_on_fail = EXCLUDED.reset_on_fail;
             """)
 
-            # Historická topka uživatelů
             top_data = [
                 ('1148172177527554161', 2), ('1333739505357819948', 3), ('1342464783349186623', 1006),
                 ('1348208550266146846', 1007), ('1374631878799130657', 68), ('1426919153071034379', 122),
@@ -103,6 +100,7 @@ class Database:
         if self.pool:
             await self.pool.close()
 
+# TENTO ŘÁDEK TADY CHYBĚL:
 db = Database()
 
 # --- DATABÁZOVÉ FUNKCE PRO COUNTING ---
