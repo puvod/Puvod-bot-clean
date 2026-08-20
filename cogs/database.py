@@ -13,6 +13,7 @@ class Database:
                 max_size=10
             )
             await self.init_tables()
+            await self.seed_initial_data()  # <-- PO PRVNÍM SPUŠTĚNÍ TENTO ŘÁDEK ZAKOMENTUJ (#)
 
     async def init_tables(self):
         async with self.pool.acquire() as conn:
@@ -46,7 +47,10 @@ class Database:
                 );
             """)
 
-            # 2. Automatické nahrání zálohovaných dat při startu
+    async def seed_initial_data(self):
+        """Jednorázové nahrání zálohovaných dat. Po prvním spuštění bota zavolání této metody vypni!"""
+        async with self.pool.acquire() as conn:
+            # Obnova selectable_roles
             roles = [
                 '1463231879414157446', '1463232272164585474', '1463232392281198776',
                 '1463232501949399164', '1463232574313988168', '1463869188543217789',
@@ -57,12 +61,12 @@ class Database:
                 await conn.execute("""
                     INSERT INTO selectable_roles (guild_id, role_id) 
                     VALUES ('1463229014901657850', $1)
-                    ON CONFLICT DO NOTHING
                 """, r_id)
 
+            # Obnova guild_settings (OPRAVENO: counting_channel_id předáno jako string v uvozovkách)
             await conn.execute("""
                 INSERT INTO guild_settings (guild_id, counting_channel_id, counting_time, current_number, current_streak, reset_on_fail) 
-                VALUES ('1463229014901657850', 1464000345561628743, '15:00', 20057, 11257, 0)
+                VALUES ('1463229014901657850', '1464000345561628743', '15:00', 20057, 11257, 0)
                 ON CONFLICT (guild_id) DO UPDATE SET 
                     counting_channel_id = EXCLUDED.counting_channel_id,
                     counting_time = EXCLUDED.counting_time,
@@ -71,6 +75,7 @@ class Database:
                     reset_on_fail = EXCLUDED.reset_on_fail;
             """)
 
+            # Obnova counting_leaderboard
             top_data = [
                 ('1148172177527554161', 2), ('1333739505357819948', 3), ('1342464783349186623', 1006),
                 ('1348208550266146846', 1007), ('1374631878799130657', 68), ('1426919153071034379', 122),
@@ -100,7 +105,7 @@ class Database:
         if self.pool:
             await self.pool.close()
 
-# TENTO ŘÁDEK TADY CHYBĚL:
+# Vytvoření globální instance
 db = Database()
 
 # --- DATABÁZOVÉ FUNKCE PRO COUNTING ---
