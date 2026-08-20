@@ -4,16 +4,13 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-# Importujeme naše vlastní moduly
 from web import keep_alive
-from database import db  # <-- ZMĚNA: Importujeme samotný objekt databáze
-from cogs.roles import RankSelectView  # Import pro Brawl Stars Ranky
+from database import db
+from cogs.roles import RankSelectView
 
-# 1. Načtení tokenu z .env souboru
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-# 2. Nastavení oprávnění (Intents)
 intents = discord.Intents.all()
 
 class MyBot(commands.Bot):
@@ -21,37 +18,41 @@ class MyBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self):
-        """Spustí se předtím, než se bot oficiálně přihlásí k Discordu."""
-        
-        # --- ZMĚNA: Připojení k asynchronní databázi ---
-        await db.connect()
-        print("🗄️ Databáze byla úspěšně připojena a inicializována.")
-
-        # Registrace Persistent View pro Brawl Stars Ranky
+        # Persistentní tlačítka
         self.add_view(RankSelectView())
         print("🔘 Persistentní tlačítka byla zaregistrována.")
 
-        # Automatické načtení všech souborů ze složky cogs/
+        # Načtení všech cogů
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
                 await self.load_extension(f"cogs.{filename[:-3]}")
                 print(f"📦 Cog '{filename}' byl úspěšně načten.")
 
-        # Synchronizace lomítkových příkazů
+        # Synchronizace Slash příkazů
         await self.tree.sync()
         print("🔄 Lomítkové příkazy byly synchronizovány.")
 
     async def on_ready(self):
-        """Spustí se, jakmile je bot online."""
         print(f"🤖 Bot {self.user.name} je ONLINE a připraven k akci!")
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="oba servery"))
 
-# 3. Asynchronní spouštěč bota
-async def start_bot_safely(bot_instance):
+bot = MyBot()
+
+# Zachycení chyb z Slash příkazů, aby Discord nehlásil "Aplikace neodpovídá" bez vysvětlení
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: Exception):
+    print(f"❌ Chyba při vykonávání příkazu /{interaction.command.name if interaction.command else 'unknown'}: {error}")
+    message = "⚠️ Při zpracování příkazu došlo k chybě v databázi nebo aplikaci."
+    if interaction.response.is_done():
+        await interaction.followup.send(message, ephemeral=True)
+    else:
+        await interaction.response.send_message(message, ephemeral=True)
+
+async def start_bot_safely():
     while True:
         try:
             print("🚀 Pokouším se přihlásit k Discord API...")
-            await bot_instance.start(TOKEN)
+            await bot.start(TOKEN)
         except discord.errors.HTTPException as e:
             if e.status == 429:
                 print("⚠️ Detekován Rate Limit (429)! Zkouším se znovu připojit za 5 minut...")
@@ -64,8 +65,11 @@ async def start_bot_safely(bot_instance):
             await asyncio.sleep(30)
 
 async def main():
-    bot = MyBot()
-    await start_bot_safely(bot)
+    # Připojení k databázi proběhne JEN JEDNOU před spuštěním bota
+    await db.connect()
+    print("🗄️ Databáze byla úspěšně připojena.")
+    
+    await start_bot_safely()
 
 if __name__ == "__main__":
     keep_alive()
