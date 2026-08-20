@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 # Importujeme naše vlastní moduly
 from web import keep_alive
-from database import init_db
+from database import db  # <-- ZMĚNA: Importujeme samotný objekt databáze
 from cogs.roles import RankSelectView  # Import pro Brawl Stars Ranky
 
 # 1. Načtení tokenu z .env souboru
@@ -22,9 +22,10 @@ class MyBot(commands.Bot):
 
     async def setup_hook(self):
         """Spustí se předtím, než se bot oficiálně přihlásí k Discordu."""
-        # Inicializace databáze
-        init_db()
-        print("🗄️ Databáze byla úspěšně inicializována.")
+        
+        # --- ZMĚNA: Připojení k asynchronní databázi ---
+        await db.connect()
+        print("🗄️ Databáze byla úspěšně připojena a inicializována.")
 
         # Registrace Persistent View pro Brawl Stars Ranky
         self.add_view(RankSelectView())
