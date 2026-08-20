@@ -23,7 +23,7 @@ class Database:
 
     async def init_db(self):
         async with self.pool.acquire() as conn:
-            # 1. Vytvoření základní tabulky guild_settings
+            # 1. Nastavení guildy
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS guild_settings (
                     guild_id VARCHAR(50) PRIMARY KEY,
@@ -38,17 +38,18 @@ class Database:
                 );
             ''')
             
-            # 2. Vytvoření tabulky pro leaderboard
+            # 2. Leaderboard – přidány sloupce pro DENNÍ i CELKOVÝ počet
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS counting_leaderboard (
                     guild_id VARCHAR(50),
                     user_id VARCHAR(50),
-                    total_counts INTEGER DEFAULT 0,
+                    daily_counts INTEGER DEFAULT 0,
+                    lifetime_counts INTEGER DEFAULT 0,
                     PRIMARY KEY (guild_id, user_id)
                 );
             ''')
 
-            # 3. TABULKA PRO ROLE
+            # 3. Role
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS selectable_roles (
                     guild_id VARCHAR(50),
@@ -57,8 +58,10 @@ class Database:
                 );
             ''')
 
-            # Fix pro existující databázi
+            # Automatické opravení starých tabulek
             await conn.execute("ALTER TABLE guild_settings ADD COLUMN IF NOT EXISTS reset_on_fail INTEGER DEFAULT 1;")
+            await conn.execute("ALTER TABLE counting_leaderboard ADD COLUMN IF NOT EXISTS daily_counts INTEGER DEFAULT 0;")
+            await conn.execute("ALTER TABLE counting_leaderboard ADD COLUMN IF NOT EXISTS lifetime_counts INTEGER DEFAULT 0;")
             print("🗄️ PostgreSQL Databáze byla úspěšně inicializována.")
 
     async def execute(self, query, *args):
@@ -73,44 +76,24 @@ class Database:
         async with self.pool.acquire() as conn:
             return await conn.fetch(query, *args)
 
-    async def close(self):
-        if self.pool:
-            await self.pool.close()
-
-# GLOBÁLNÍ INSTANCE - ŘEŠÍ ImportError na Renderu
 db = Database()
 
-# --- ASYNCHRONNÍ FUNKCE KÓDU ---
+# --- POMOCNÉ FUNKCE ---
 
 async def get_setting(guild_id: int, column_name: str):
-    allowed_columns = {
-        "welcome_channel_id", "logs_channel_id", "counting_channel_id",
-        "counting_time", "current_number", "last_user_id", "current_streak",
-        "reset_on_fail"
-    }
-    if column_name not in allowed_columns:
+    allowed = {"welcome_channel_id", "logs_channel_id", "counting_channel_id", "counting_time", "current_number", "last_user_id", "current_streak", "reset_on_fail"}
+    if column_name not in allowed:
         raise ValueError(f"Nepovolený název sloupce: {column_name}")
-
     row = await db.fetchrow(f"SELECT {column_name} FROM guild_settings WHERE guild_id = $1", str(guild_id))
     return row[0] if row else None
 
 async def update_setting(g_id, column_name, value):
-    allowed_columns = {
-        "welcome_channel_id", "logs_channel_id", "counting_channel_id",
-        "counting_time", "current_number", "last_user_id", "current_streak",
-        "reset_on_fail"
-    }
-    if column_name not in allowed_columns:
+    allowed = {"welcome_channel_id", "logs_channel_id", "counting_channel_id", "counting_time", "current_number", "last_user_id", "current_streak", "reset_on_fail"}
+    if column_name not in allowed:
         raise ValueError(f"Nepovolený název sloupce: {column_name}")
 
-    await db.execute(
-        "INSERT INTO guild_settings (guild_id) VALUES ($1) ON CONFLICT (guild_id) DO NOTHING",
-        str(g_id)
-    )
-    await db.execute(
-        f"UPDATE guild_settings SET {column_name} = $1 WHERE guild_id = $2",
-        value, str(g_id)
-    )
+    await db.execute("INSERT INTO guild_settings (guild_id) VALUES ($1) ON CONFLICT (guild_id) DO NOTHING", str(g_id))
+    await db.execute(f"UPDATE guild_settings SET {column_name} = $1 WHERE guild_id = $2", value, str(g_id))
 
 async def set_counting_number(guild_id: int, number: int):
     g_id = str(guild_id)
@@ -120,26 +103,25 @@ async def set_counting_number(guild_id: int, number: int):
 async def increment_user_count(guild_id: int, user_id: int):
     g_id, u_id = str(guild_id), str(user_id)
     await db.execute('''
-        INSERT INTO counting_leaderboard (guild_id, user_id, total_counts)
-        VALUES ($1, $2, 1)
+        INSERT INTO counting_leaderboard (guild_id, user_id, daily_counts, lifetime_counts)
+        VALUES ($1, $2, 1, 1)
         ON CONFLICT (guild_id, user_id)
-        DO UPDATE SET total_counts = counting_leaderboard.total_counts + 1
+        DO UPDATE SET 
+            daily_counts = counting_leaderboard.daily_counts + 1,
+            lifetime_counts = counting_leaderboard.lifetime_counts + 1
     ''', g_id, u_id)
 
-async def get_top_users(guild_id: int, limit=10):
-    rows = await db.fetch("SELECT user_id, total_counts FROM counting_leaderboard WHERE guild_id = $1 ORDER BY total_counts DESC LIMIT $2", str(guild_id), limit)
+async def get_top_users_daily(guild_id: int, limit=10):
+    rows = await db.fetch("SELECT user_id, daily_counts FROM counting_leaderboard WHERE guild_id = $1 AND daily_counts > 0 ORDER BY daily_counts DESC LIMIT $2", str(guild_id), limit)
     return rows
+
+async def get_top_users_lifetime(guild_id: int, limit=10):
+    rows = await db.fetch("SELECT user_id, lifetime_counts FROM counting_leaderboard WHERE guild_id = $1 ORDER BY lifetime_counts DESC LIMIT $2", str(guild_id), limit)
+    return rows
+
+async def reset_daily_stats(guild_id: int):
+    await db.execute("UPDATE counting_leaderboard SET daily_counts = 0 WHERE guild_id = $1", str(guild_id))
 
 async def get_all_guilds_with_counting():
     rows = await db.fetch("SELECT guild_id, counting_channel_id, counting_time FROM guild_settings WHERE counting_channel_id IS NOT NULL AND counting_time IS NOT NULL")
     return rows
-
-async def add_selectable_role(guild_id: int, role_id: int):
-    await db.execute(
-        "INSERT INTO selectable_roles (guild_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-        str(guild_id), str(role_id)
-    )
-
-async def get_selectable_roles(guild_id: int):
-    rows = await db.fetch("SELECT role_id FROM selectable_roles WHERE guild_id = $1", str(guild_id))
-    return [row[0] for row in rows]
