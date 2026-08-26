@@ -46,7 +46,7 @@ class Counting(commands.GroupCog, name="counting"):
                 f"🔢 Kanál pro počítání byl nastaven na {channel.mention}.\n"
                 f"Aktuální stav byl nastaven na **{výchozí_číslo}**. Další správné číslo je **{výchozí_číslo + 1}**!\n"
                 f"⚙️ Reset po chybě: **{stav_resetu}**\n"
-                f"🪙 Odměna: Za každé správné číslo získává hráč **1 Token** do Brawl systému!\n"
+                f"🪙 Odměny: **1 Token** za každých 100 čísel | 💎 **80 Gemů** za každých 1 000 čísel!\n"
                 f"🔓 Povoleno: Jeden uživatel může psát více čísel po sobě."
             )
         except Exception as e:
@@ -183,15 +183,28 @@ class Counting(commands.GroupCog, name="counting"):
             # Přičte +1 do denní i celkové topky
             await increment_user_count(message.guild.id, message.author.id)
             
-            # ODMĚNA: Přidá 1 token do Brawl Stars ekonomiky
-            await add_tokens_and_gems(message.guild.id, message.author.id, tokens=1, gems=0)
+            # --- SYSTÉM ODMĚN (100 čísel = 1 token | 1000 čísel = 80 gemů) ---
+            reward_text = ""
             
-            # --- PŘIDÁNÍ CUSTOM EMOJI ---
+            # Každých 1000 čísel (např. 1000, 2000, 3000...)
+            if expected_number % 1000 == 0:
+                await add_tokens_and_gems(message.guild.id, message.author.id, tokens=0, gems=80)
+                reward_text = f"💎 **MILNÍK {expected_number}!** {message.author.mention} získává **80 Gemů** do Brawl systému!"
+            
+            # Každých 100 čísel (např. 100, 200... ale vynechá tisícovky, aby nedal dvoji odměnu)
+            elif expected_number % 100 == 0:
+                await add_tokens_and_gems(message.guild.id, message.author.id, tokens=1, gems=0)
+                reward_text = f"🪙 **STOVKA DOSAŽENA ({expected_number})!** {message.author.mention} získává **1 Token**!"
+
+            # --- PŘIDÁNÍ CUSTOM EMOJI A ZPRÁVY ---
             verify_emoji = discord.utils.get(message.guild.emojis, name="verify")
             if verify_emoji:
                 await message.add_reaction(verify_emoji)
             else:
                 await message.add_reaction("✅")
+
+            if reward_text:
+                await message.channel.send(reward_text)
 
         except Exception as e:
             print(f"❌ Chyba v on_message počítání: {e}")

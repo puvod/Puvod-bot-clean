@@ -60,7 +60,7 @@ BRAWLERS = {
     ]
 }
 
-# Šance pro jednotlivé boxy (součetvah = 100)
+# Šance pro jednotlivé boxy (součet vah = 100)
 BOX_RATES = {
     "brawl_box": {"Rare": 65, "Super Rare": 25, "Epic": 8, "Mythic": 1.8, "Legendary": 0.2},
     "big_box": {"Rare": 40, "Super Rare": 35, "Epic": 18, "Mythic": 6, "Legendary": 1.0},
@@ -76,7 +76,6 @@ class BrawlCog(commands.Cog, name="brawl"):
         role_name = f"🤖 {brawler_info['name']}"
         role = discord.utils.get(guild.roles, name=role_name)
         
-        # Pokud role neexistuje, bot ji automaticky vytvoří
         if not role:
             try:
                 role = await guild.create_role(
@@ -105,7 +104,9 @@ class BrawlCog(commands.Cog, name="brawl"):
 
     # --- PŘÍKAZY PRO ŠTĚSTÍ (BOXŮ) ---
 
-    @app_commands.command(name="brawlbox", description="Otevře klasický Brawl Box (Zdarma bez omezení).")
+    # Cooldown nastaven na 1 použití za 21600 sekund (6 hodin) per user
+    @app_commands.checks.cooldown(1, 21600, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.command(name="brawlbox", description="Otevře zdarma Brawl Box (dostupný jednou za 6 hodin).")
     async def brawlbox(self, interaction: discord.Interaction):
         await interaction.response.defer()
         
@@ -213,6 +214,30 @@ class BrawlCog(commands.Cog, name="brawl"):
             f"✅ Uživatel {user.mention} obdržel **{tokens} Tokenů** a **{gems} Gemů**.",
             ephemeral=True
         )
+
+    # --- ODCHYTÁVÁNÍ CHYB KÓDU (COOLDOWNY) ---
+
+    async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            hours = int(error.retry_after // 3600)
+            minutes = int((error.retry_after % 3600) // 60)
+            seconds = int(error.retry_after % 60)
+            
+            time_str = ""
+            if hours > 0:
+                time_str += f"{hours}h "
+            if minutes > 0 or hours > 0:
+                time_str += f"{minutes}m "
+            time_str += f"{seconds}s"
+
+            message = f"⏳ Tento příkaz je na cooldownu! Další **Brawl Box** si můžeš vybrat za **{time_str}**."
+
+            if interaction.response.is_done():
+                await interaction.followup.send(message, ephemeral=True)
+            else:
+                await interaction.response.send_message(message, ephemeral=True)
+        else:
+            raise error
 
 async def setup(bot):
     await bot.add_cog(BrawlCog(bot))
