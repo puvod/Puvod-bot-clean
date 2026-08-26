@@ -367,7 +367,7 @@ class ChatReviveCog(commands.Cog):
             "hard": ("🔴 TĚŽKÁ", discord.Color.red()),
             "ultrahard": ("🟣 ULTRA TĚŽKÁ", discord.Color.purple()),
             "football": ("⚽ FOTBALOVÉ", discord.Color.blue()),
-            "brawlstars_easy": ("🌵 BRAWL STARS - LEHKÁ", discord.Color.og_blurrple()),
+            "brawlstars_easy": ("🌵 BRAWL STARS - LEHKÁ", discord.Color.og_blurple()),
             "brawlstars_medium": ("🌵 BRAWL STARS - STŘEDNÍ", discord.Color.magenta()),
             "brawlstars_hard": ("🌵 BRAWL STARS - TĚŽKÁ", discord.Color.dark_purple())
         }

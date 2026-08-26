@@ -37,7 +37,7 @@ class DiscussionCog(commands.Cog):
         for guild in self.bot.guilds:
             # Můžeš použít ID konkrétního kanálu nebo vytáhnout z databáze
             # Pokud máš kanál nastavený v DB pod klíčem 'welcome_channel_id' nebo 'chat_channel_id', načteme ho:
-            channel_id = get_setting(guild.id, "welcome_channel_id")  # případně nahraď svým ID kanálu
+            channel_id = await get_setting(guild.id, "welcome_channel_id")  
             
             if channel_id:
                 channel = guild.get_channel(channel_id)
