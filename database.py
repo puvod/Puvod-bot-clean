@@ -58,6 +58,18 @@ class Database:
                 );
             ''')
 
+            # 4. Brawl Stars systém (Tokeny, Gemy a Brawleři)
+            await conn.execute('''
+                CREATE TABLE IF NOT EXISTS user_brawl (
+                    guild_id VARCHAR(50),
+                    user_id VARCHAR(50),
+                    tokens INTEGER DEFAULT 0,
+                    gems INTEGER DEFAULT 0,
+                    brawlers TEXT DEFAULT '',
+                    PRIMARY KEY (guild_id, user_id)
+                );
+            ''')
+
             # Automatické opravení starých tabulek
             await conn.execute("ALTER TABLE guild_settings ADD COLUMN IF NOT EXISTS reset_on_fail INTEGER DEFAULT 1;")
             await conn.execute("ALTER TABLE counting_leaderboard ADD COLUMN IF NOT EXISTS daily_counts INTEGER DEFAULT 0;")
@@ -78,7 +90,7 @@ class Database:
 
 db = Database()
 
-# --- POMOCNÉ FUNKCE ---
+# --- POMOCNÉ FUNKCE PRO NASTAVENÍ A POČÍTÁNÍ ---
 
 async def get_setting(guild_id: int, column_name: str):
     allowed = {"welcome_channel_id", "logs_channel_id", "counting_channel_id", "counting_time", "current_number", "last_user_id", "current_streak", "reset_on_fail"}
@@ -125,3 +137,42 @@ async def reset_daily_stats(guild_id: int):
 async def get_all_guilds_with_counting():
     rows = await db.fetch("SELECT guild_id, counting_channel_id, counting_time FROM guild_settings WHERE counting_channel_id IS NOT NULL AND counting_time IS NOT NULL")
     return rows
+
+# --- BRAWL STARS SYSTÉM FUNKCE ---
+
+async def get_user_brawl_data(guild_id: int, user_id: int):
+    """Načte tokeny, gemy a seznam Brawlerů uživatele."""
+    g_id, u_id = str(guild_id), str(user_id)
+    row = await db.fetchrow("SELECT tokens, gems, brawlers FROM user_brawl WHERE guild_id = $1 AND user_id = $2", g_id, u_id)
+    
+    if not row:
+        await db.execute("INSERT INTO user_brawl (guild_id, user_id, tokens, gems, brawlers) VALUES ($1, $2, 0, 0, '') ON CONFLICT DO NOTHING", g_id, u_id)
+        return {"tokens": 0, "gems": 0, "brawlers": []}
+    
+    brawlers_list = [b.strip() for b in row["brawlers"].split(",") if b.strip()]
+    return {"tokens": row["tokens"], "gems": row["gems"], "brawlers": brawlers_list}
+
+async def add_tokens_and_gems(guild_id: int, user_id: int, tokens: int = 0, gems: int = 0):
+    """Přičte nebo odečte tokeny a gemy uživateli."""
+    g_id, u_id = str(guild_id), str(user_id)
+    await db.execute('''
+        INSERT INTO user_brawl (guild_id, user_id, tokens, gems)
+        VALUES ($1, $2, GREATEST(0, $3), GREATEST(0, $4))
+        ON CONFLICT (guild_id, user_id)
+        DO UPDATE SET 
+            tokens = GREATEST(0, user_brawl.tokens + $3),
+            gems = GREATEST(0, user_brawl.gems + $4)
+    ''', g_id, u_id, tokens, gems)
+
+async def add_brawler_to_user(guild_id: int, user_id: int, brawler_name: str):
+    """Uloží nového Brawlera uživateli. Vrátí True pokud je nový, nebo False pokud šlo o duplikát."""
+    g_id, u_id = str(guild_id), str(user_id)
+    data = await get_user_brawl_data(guild_id, user_id)
+    current_brawlers = data["brawlers"]
+    
+    if brawler_name not in current_brawlers:
+        current_brawlers.append(brawler_name)
+        new_brawlers_str = ",".join(current_brawlers)
+        await db.execute("UPDATE user_brawl SET brawlers = $1 WHERE guild_id = $2 AND user_id = $3", new_brawlers_str, g_id, u_id)
+        return True
+    return False

@@ -3,11 +3,11 @@ from discord.ext import commands, tasks
 from discord import app_commands
 import datetime
 
-# Importujeme nové funkce z databáze
+# Importujeme funkce z databáze (včetně odměňování pro Brawl Stars)
 from database import (
     update_setting, get_setting, increment_user_count, 
     get_top_users_daily, get_top_users_lifetime, reset_daily_stats,
-    get_all_guilds_with_counting, set_counting_number
+    get_all_guilds_with_counting, set_counting_number, add_tokens_and_gems
 )
 
 class Counting(commands.GroupCog, name="counting"):
@@ -46,6 +46,7 @@ class Counting(commands.GroupCog, name="counting"):
                 f"🔢 Kanál pro počítání byl nastaven na {channel.mention}.\n"
                 f"Aktuální stav byl nastaven na **{výchozí_číslo}**. Další správné číslo je **{výchozí_číslo + 1}**!\n"
                 f"⚙️ Reset po chybě: **{stav_resetu}**\n"
+                f"🪙 Odměna: Za každé správné číslo získává hráč **1 Token** do Brawl systému!\n"
                 f"🔓 Povoleno: Jeden uživatel může psát více čísel po sobě."
             )
         except Exception as e:
@@ -96,7 +97,6 @@ class Counting(commands.GroupCog, name="counting"):
         app_commands.Choice(name="Celkově (Lifetime)", value="lifetime")
     ])
     async def leaderboard(self, interaction: discord.Interaction, typ: str = "daily"):
-        # Bezpečné deferování interakce (zabrání 10062 Unknown interaction)
         try:
             if not interaction.response.is_done():
                 await interaction.response.defer()
@@ -180,8 +180,11 @@ class Counting(commands.GroupCog, name="counting"):
             except Exception:
                 pass
                 
-            # Přičte +1 do denní i do celkové topky!
+            # Přičte +1 do denní i celkové topky
             await increment_user_count(message.guild.id, message.author.id)
+            
+            # ODMĚNA: Přidá 1 token do Brawl Stars ekonomiky
+            await add_tokens_and_gems(message.guild.id, message.author.id, tokens=1, gems=0)
             
             # --- PŘIDÁNÍ CUSTOM EMOJI ---
             verify_emoji = discord.utils.get(message.guild.emojis, name="verify")
