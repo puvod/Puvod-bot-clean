@@ -28,8 +28,12 @@ class Counting(commands.GroupCog, name="counting"):
         reset_po_chybe="Pokud zvolíš False, bot při chybě neresetuje počítadlo na 0, pouze dá křížek."
     )
     async def setup_channel(self, interaction: discord.Interaction, channel: discord.TextChannel, výchozí_číslo: int = 0, reset_po_chybe: bool = True):
-        await interaction.response.defer(ephemeral=True)
-        
+        try:
+            if not interaction.response.is_done():
+                await interaction.response.defer(ephemeral=True)
+        except discord.NotFound:
+            return
+
         try:
             await update_setting(interaction.guild_id, "counting_channel_id", channel.id)
             reset_val = 1 if reset_po_chybe else 0
@@ -52,7 +56,12 @@ class Counting(commands.GroupCog, name="counting"):
     @app_commands.command(name="set_number", description="Ručně přenastaví aktuální číslo v databázi.")
     @app_commands.describe(číslo="Zadej nové aktuální číslo")
     async def set_number(self, interaction: discord.Interaction, číslo: int):
-        await interaction.response.defer(ephemeral=False)
+        try:
+            if not interaction.response.is_done():
+                await interaction.response.defer(ephemeral=False)
+        except discord.NotFound:
+            return
+
         try:
             await set_counting_number(interaction.guild_id, číslo)
             await interaction.followup.send(
@@ -87,7 +96,13 @@ class Counting(commands.GroupCog, name="counting"):
         app_commands.Choice(name="Celkově (Lifetime)", value="lifetime")
     ])
     async def leaderboard(self, interaction: discord.Interaction, typ: str = "daily"):
-        await interaction.response.defer()
+        # Bezpečné deferování interakce (zabrání 10062 Unknown interaction)
+        try:
+            if not interaction.response.is_done():
+                await interaction.response.defer()
+        except discord.NotFound:
+            return
+
         guild_id = interaction.guild_id
         
         try:
@@ -126,7 +141,7 @@ class Counting(commands.GroupCog, name="counting"):
 
         try:
             counting_channel_id = await get_setting(message.guild.id, "counting_channel_id")
-        except Exception as e:
+        except Exception:
             return
 
         if not counting_channel_id or str(message.channel.id) != str(counting_channel_id):
@@ -162,7 +177,7 @@ class Counting(commands.GroupCog, name="counting"):
             try:
                 streak = await get_setting(message.guild.id, "current_streak") or 0
                 await update_setting(message.guild.id, "current_streak", int(streak) + 1)
-            except:
+            except Exception:
                 pass
                 
             # Přičte +1 do denní i do celkové topky!
@@ -186,7 +201,7 @@ class Counting(commands.GroupCog, name="counting"):
         
         try:
             guilds = await get_all_guilds_with_counting()
-        except Exception as e:
+        except Exception:
             return
             
         for g_id, ch_id, c_time in guilds:

@@ -38,15 +38,22 @@ class MyBot(commands.Bot):
 
 bot = MyBot()
 
-# Zachycení chyb z Slash příkazů, aby Discord nehlásil "Aplikace neodpovídá" bez vysvětlení
+# Zachycení chyb ze Slash příkazů bez padání na mrtvých interakcích
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: Exception):
-    print(f"❌ Chyba při vykonávání příkazu /{interaction.command.name if interaction.command else 'unknown'}: {error}")
+    cmd_name = interaction.command.name if interaction.command else "unknown"
+    print(f"❌ Chyba při vykonávání příkazu /{cmd_name}: {error}")
+    
     message = "⚠️ Při zpracování příkazu došlo k chybě v databázi nebo aplikaci."
-    if interaction.response.is_done():
-        await interaction.followup.send(message, ephemeral=True)
-    else:
-        await interaction.response.send_message(message, ephemeral=True)
+    
+    try:
+        if interaction.response.is_done():
+            await interaction.followup.send(message, ephemeral=True)
+        else:
+            await interaction.response.send_message(message, ephemeral=True)
+    except discord.errors.NotFound:
+        # Interakce vypršela nebo byla smazána klientem — ignorujeme bez pádů v konzoli
+        pass
 
 async def start_bot_safely():
     while True:
@@ -58,7 +65,7 @@ async def start_bot_safely():
                 print("⚠️ Detekován Rate Limit (429)! Zkouším se znovu připojit za 5 minut...")
                 await asyncio.sleep(300)
             else:
-                print(f"❌ Nastala chyba při připojování: {e}")
+                print(f"❌ Nastala chyby při připojování: {e}")
                 await asyncio.sleep(30)
         except Exception as e:
             print(f"❌ Kritické selhání: {e}")
