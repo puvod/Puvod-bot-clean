@@ -5,6 +5,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+# Import databázové funkce pro připsání tokenů a gemů (stejně jako v Counting)
+from database import add_tokens_and_gems
+
 # Pomocná funkce pro odstranění diakritiky a převod na malá písmena
 def normalize_text(text: str) -> str:
     text = text.lower().strip()
@@ -420,15 +423,27 @@ class ChatReviveCog(commands.Cog):
 
         self.active_questions[channel_id] = False
 
-        # Odměnění výherce přes Leveling / Economy Cog (pokud existuje)
+        # --- ODMĚNĚNÍ VÝHERCE ---
+        
+        # 1. Připsání Gemů a Tokenů do databáze (Brawl systém)
+        if tokens_reward > 0 or gems_reward > 0:
+            try:
+                await add_tokens_and_gems(
+                    guild_id=interaction.guild_id, 
+                    user_id=winner_msg.author.id, 
+                    tokens=tokens_reward, 
+                    gems=gems_reward
+                )
+            except Exception as e:
+                print(f"❌ Chyba při přičítání měny v Revive: {e}")
+
+        # 2. Připsání XP přes Leveling Cog (pokud existuje)
         level_cog = self.bot.get_cog("LevelingCog")
-        if level_cog:
-            if hasattr(level_cog, "add_xp"):
+        if level_cog and hasattr(level_cog, "add_xp"):
+            try:
                 await level_cog.add_xp(winner_msg.author, xp_reward, interaction.channel)
-            if hasattr(level_cog, "add_tokens") and tokens_reward > 0:
-                await level_cog.add_tokens(winner_msg.author, tokens_reward)
-            if hasattr(level_cog, "add_gems") and gems_reward > 0:
-                await level_cog.add_gems(winner_msg.author, gems_reward)
+            except Exception as e:
+                print(f"❌ Chyba při přičítání XP v Revive: {e}")
 
         win_embed = discord.Embed(
             title="🎉 Máme vítěze!",
