@@ -334,7 +334,10 @@ class ChatReviveCog(commands.Cog):
         app_commands.Choice(name="🟡 Střední (Medium)", value="medium"),
         app_commands.Choice(name="🔴 Těžká (Hard)", value="hard"),
         app_commands.Choice(name="🟣 Ultra Těžká (Ultra Hard)", value="ultrahard"),
-        app_commands.Choice(name="⚽ Fotbalové", value="football")
+        app_commands.Choice(name="⚽ Fotbalové", value="football"),
+        app_commands.Choice(name="🌵 BS - Lehká", value="brawlstars_easy"),
+        app_commands.Choice(name="🌵 BS - Střední", value="brawlstars_medium"),
+        app_commands.Choice(name="🌵 BS - Těžká", value="brawlstars_hard")
     ])
     async def revive(self, interaction: discord.Interaction, difficulty: str = "random"):
         channel_id = interaction.channel.id
@@ -363,7 +366,10 @@ class ChatReviveCog(commands.Cog):
             "medium": ("🟡 STŘEDNÍ", discord.Color.gold()),
             "hard": ("🔴 TĚŽKÁ", discord.Color.red()),
             "ultrahard": ("🟣 ULTRA TĚŽKÁ", discord.Color.purple()),
-            "football": ("⚽ FOTBALOVÉ", discord.Color.blue())
+            "football": ("⚽ FOTBALOVÉ", discord.Color.blue()),
+            "brawlstars_easy": ("🌵 BRAWL STARS - LEHKÁ", discord.Color.og_blurrple()),
+            "brawlstars_medium": ("🌵 BRAWL STARS - STŘEDNÍ", discord.Color.magenta()),
+            "brawlstars_hard": ("🌵 BRAWL STARS - TĚŽKÁ", discord.Color.dark_purple())
         }
         
         diff_label, color = diff_config[selected_diff]
