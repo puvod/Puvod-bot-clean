@@ -11,7 +11,7 @@ from database import (
 # Seznam Brawlerů rozdělený podle raritek
 BRAWLERS = {
     "Rare": [
-        {"name": "Shelly", "color": discord.Color.green()},
+        {"name": "Nita", "color": discord.Color.green()},
         {"name": "Colt", "color": discord.Color.green()},
         {"name": "Bull", "color": discord.Color.green()},
         {"name": "Brock", "color": discord.Color.green()},
@@ -21,13 +21,21 @@ BRAWLERS = {
         {"name": "Rosa", "color": discord.Color.green()}
     ],
     "Super Rare": [
+        {"name": "Jessie", "color": discord.Color.blue()},
+        {"name": "Dynamike", "color": discord.Color.blue()},
+        {"name": "Tick", "color": discord.Color.blue()},
+        {"name": "8-Bit", "color": discord.Color.blue()},
         {"name": "Rico", "color": discord.Color.blue()},
         {"name": "Darryl", "color": discord.Color.blue()},
         {"name": "Penny", "color": discord.Color.blue()},
         {"name": "Carl", "color": discord.Color.blue()},
-        {"name": "Jacky", "color": discord.Color.blue()}
+        {"name": "Jacky", "color": discord.Color.blue()},
+        {"name": "Gus", "color": discord.Color.blue()}
     ],
     "Epic": [
+        {"name": "Bo", "color": discord.Color.purple()},
+        {"name": "Emz", "color": discord.Color.purple()},
+        {"name": "Stu", "color": discord.Color.purple()},
         {"name": "Piper", "color": discord.Color.purple()},
         {"name": "Pam", "color": discord.Color.purple()},
         {"name": "Frank", "color": discord.Color.purple()},
@@ -37,7 +45,24 @@ BRAWLERS = {
         {"name": "Edgar", "color": discord.Color.purple()},
         {"name": "Griff", "color": discord.Color.purple()},
         {"name": "Grom", "color": discord.Color.purple()},
-        {"name": "Bonnie", "color": discord.Color.purple()}
+        {"name": "Bonnie", "color": discord.Color.purple()},
+        {"name": "Gale", "color": discord.Color.purple()},
+        {"name": "Colette", "color": discord.Color.purple()},
+        {"name": "Belle", "color": discord.Color.purple()},
+        {"name": "Ash", "color": discord.Color.purple()},
+        {"name": "Lola", "color": discord.Color.purple()},
+        {"name": "Sam", "color": discord.Color.purple()},
+        {"name": "Mandy", "color": discord.Color.purple()},
+        {"name": "Maisie", "color": discord.Color.purple()},
+        {"name": "Hank", "color": discord.Color.purple()},
+        {"name": "Pearl", "color": discord.Color.purple()},
+        {"name": "Larry", "color": discord.Color.purple()},
+        {"name": "Angelo", "color": discord.Color.purple()},
+        {"name": "Berry", "color": discord.Color.purple()},
+        {"name": "Shade", "color": discord.Color.purple()},
+        {"name": "Meeple", "color": discord.Color.purple()},
+        {"name": "Trunk", "color": discord.Color.purple()},
+        {"name": "Bolt", "color": discord.Color.purple()}
     ],
     "Mythic": [
         {"name": "Mortis", "color": discord.Color.from_rgb(186, 85, 211)},
@@ -47,7 +72,39 @@ BRAWLERS = {
         {"name": "Mr. P", "color": discord.Color.from_rgb(186, 85, 211)},
         {"name": "Sprout", "color": discord.Color.from_rgb(186, 85, 211)},
         {"name": "Byron", "color": discord.Color.from_rgb(186, 85, 211)},
-        {"name": "Squeak", "color": discord.Color.from_rgb(186, 85, 211)}
+        {"name": "Squeak", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Lou", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Ruffs", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Buzz", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Fang", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Eve", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Otis", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Buster", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Gray", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Willow", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Chuck", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Mico", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Lily", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Ollie", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Finx", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Jae-Yong", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Alli", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Mina", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Glowy", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Damian", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Janet", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "R-T", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Doug", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Charlie", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Melodie", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Clancy", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Moe", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Juju", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Lumi", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Zigy", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Gigi", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Najia", "color": discord.Color.from_rgb(186, 85, 211)},
+        {"name": "Starr Nova", "color": discord.Color.from_rgb(186, 85, 211)}
     ],
     "Legendary": [
         {"name": "Spike", "color": discord.Color.gold()},
@@ -56,15 +113,26 @@ BRAWLERS = {
         {"name": "Sandy", "color": discord.Color.gold()},
         {"name": "Amber", "color": discord.Color.gold()},
         {"name": "Meg", "color": discord.Color.gold()},
-        {"name": "Chester", "color": discord.Color.gold()}
+        {"name": "Surge", "color": discord.Color.gold()},
+        {"name": "Chester", "color": discord.Color.gold()},
+        {"name": "Cordelius", "color": discord.Color.gold()},
+        {"name": "Kit", "color": discord.Color.gold()},
+        {"name": "Draco", "color": discord.Color.gold()},
+        {"name": "Kenji", "color": discord.Color.gold()},
+        {"name": "Pierce", "color": discord.Color.gold()},
+        {"name": "Nori", "color": discord.Color.gold()}
+    ],
+    "Ultra Legendary": [
+        {"name": "Kaze", "color": discord.Color.dark_red()},
+        {"name": "Sirius", "color": discord.Color.dark_red()}
     ]
 }
 
 # Šance pro jednotlivé boxy (součet vah = 100)
 BOX_RATES = {
-    "brawl_box": {"Rare": 65, "Super Rare": 25, "Epic": 8, "Mythic": 1.8, "Legendary": 0.2},
-    "big_box": {"Rare": 40, "Super Rare": 35, "Epic": 18, "Mythic": 6, "Legendary": 1.0},
-    "mega_box": {"Rare": 15, "Super Rare": 30, "Epic": 35, "Mythic": 15, "Legendary": 5.0}
+    "brawl_box": {"Rare": 60, "Super Rare": 25, "Epic": 10, "Mythic": 4.0, "Legendary": 0.9, "Ultra Legendary": 0.1},
+    "big_box": {"Rare": 35, "Super Rare": 30, "Epic": 20, "Mythic": 10.0, "Legendary": 4.5, "Ultra Legendary": 0.5},
+    "mega_box": {"Rare": 10, "Super Rare": 20, "Epic": 35, "Mythic": 20.0, "Legendary": 12.0, "Ultra Legendary": 3.0}
 }
 
 class BrawlCog(commands.Cog, name="brawl"):
@@ -93,37 +161,50 @@ class BrawlCog(commands.Cog, name="brawl"):
             except discord.Forbidden:
                 print(f"⚠️ Nemohu přidat roli {role_name} uživateli {member.display_name}")
 
-    def _roll_brawler(self, box_type: str):
+    def _roll_brawler(self, box_type: str, owned_brawlers: list):
         rates = BOX_RATES[box_type]
-        rarities = list(rates.keys())
-        weights = list(rates.values())
-        
-        chosen_rarity = random.choices(rarities, weights=weights, k=1)[0]
-        chosen_brawler = random.choice(BRAWLERS[chosen_rarity])
+        available_rarities = []
+        weights = []
+
+        # Projdeme rarita po raritě a zkontrolujeme, zda v ní jsou ještě nevlastnění brawleři
+        for rarity, weight in rates.items():
+            unowned = [b for b in BRAWLERS[rarity] if b["name"] not in owned_brawlers]
+            if unowned:
+                available_rarities.append(rarity)
+                weights.append(weight)
+
+        # Pokud už má uživatel úplně všechny Brawlery ze hry
+        if not available_rarities:
+            return None, None
+
+        chosen_rarity = random.choices(available_rarities, weights=weights, k=1)[0]
+        unowned_in_rarity = [b for b in BRAWLERS[chosen_rarity] if b["name"] not in owned_brawlers]
+        chosen_brawler = random.choice(unowned_in_rarity)
+
         return chosen_rarity, chosen_brawler
 
     # --- PŘÍKAZY PRO ŠTĚSTÍ (BOXŮ) ---
 
-    # Cooldown nastaven na 1 použití za 21600 sekund (6 hodin) per user
     @app_commands.checks.cooldown(1, 21600, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="brawlbox", description="Otevře zdarma Brawl Box (dostupný jednou za 6 hodin).")
     async def brawlbox(self, interaction: discord.Interaction):
         await interaction.response.defer()
         
-        rarity, brawler = self._roll_brawler("brawl_box")
-        is_new = await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler["name"])
+        user_data = await get_user_brawl_data(interaction.guild_id, interaction.user.id)
+        rarity, brawler = self._roll_brawler("brawl_box", user_data["brawlers"])
+
+        if brawler is None:
+            return await interaction.followup.send("🏆 Už vlastníš úplně všechny Brawlery! Skvělá práce!", ephemeral=True)
+
+        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler["name"])
         await self._assign_brawler_role(interaction.guild, interaction.user, brawler)
 
         embed = discord.Embed(
             title="📦 Brawl Box Otevřen!",
-            description=f"Padl ti Brawler: **{brawler['name']}**!\nRarita: **{rarity}**",
+            description=f"Padl ti noví Brawler: **{brawler['name']}**!\nRarita: **{rarity}**",
             color=brawler["color"]
         )
-        if not is_new:
-            embed.set_footer(text="Tohoto Brawlera už vlastníš! (Získal jsi duplikát)")
-        else:
-            embed.set_footer(text="✨ Nový Brawler do sbírky! Role ti byla přidělena.")
-
+        embed.set_footer(text="✨ Nový Brawler do sbírky! Role ti byla přidělena.")
         await interaction.followup.send(embed=embed)
 
     @app_commands.command(name="bigbox", description="Otevře Big Box (Stojí 10 Tokenů).")
@@ -137,22 +218,21 @@ class BrawlCog(commands.Cog, name="brawl"):
                 ephemeral=True
             )
 
+        rarity, brawler = self._roll_brawler("big_box", user_data["brawlers"])
+
+        if brawler is None:
+            return await interaction.followup.send("🏆 Už vlastníš úplně všechny Brawlery! Tokeny ti zůstávají.", ephemeral=True)
+
         await add_tokens_and_gems(interaction.guild_id, interaction.user.id, tokens=-10)
-        
-        rarity, brawler = self._roll_brawler("big_box")
-        is_new = await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler["name"])
+        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler["name"])
         await self._assign_brawler_role(interaction.guild, interaction.user, brawler)
 
         embed = discord.Embed(
             title="🎁 Big Box Otevřen!",
-            description=f"Padl ti Brawler: **{brawler['name']}**!\nRarita: **{rarity}**",
+            description=f"Padl ti nový Brawler: **{brawler['name']}**!\nRarita: **{rarity}**",
             color=brawler["color"]
         )
-        if not is_new:
-            embed.set_footer(text="Tohoto Brawlera už máš ve sbírce.")
-        else:
-            embed.set_footer(text="🎉 Nový Brawler odemčen!")
-
+        embed.set_footer(text="🎉 Nový Brawler odemčen!")
         await interaction.followup.send(embed=embed)
 
     @app_commands.command(name="megabox", description="Otevře Mega Box s obří šancí na Legendárky (Stojí 80 Gemů).")
@@ -166,22 +246,21 @@ class BrawlCog(commands.Cog, name="brawl"):
                 ephemeral=True
             )
 
+        rarity, brawler = self._roll_brawler("mega_box", user_data["brawlers"])
+
+        if brawler is None:
+            return await interaction.followup.send("🏆 Už vlastníš úplně všechny Brawlery! Gemy ti zůstávají.", ephemeral=True)
+
         await add_tokens_and_gems(interaction.guild_id, interaction.user.id, gems=-80)
-        
-        rarity, brawler = self._roll_brawler("mega_box")
-        is_new = await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler["name"])
+        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler["name"])
         await self._assign_brawler_role(interaction.guild, interaction.user, brawler)
 
         embed = discord.Embed(
             title="💥 MEGA BOX Otevřen!",
-            description=f"Padl ti Brawler: **{brawler['name']}**!\nRarita: **{rarity}**",
+            description=f"Padl ti nový Brawler: **{brawler['name']}**!\nRarita: **{rarity}**",
             color=brawler["color"]
         )
-        if not is_new:
-            embed.set_footer(text="Tohoto Brawlera už máš ve sbírce.")
-        else:
-            embed.set_footer(text="🔥 Získal jsi nového Brawlera!")
-
+        embed.set_footer(text="🔥 Získal jsi nového Brawlera!")
         await interaction.followup.send(embed=embed)
 
     @app_commands.command(name="inventory", description="Zobrazí tvůj stav Tokenů, Gemů a získané Brawlery.")
