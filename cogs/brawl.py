@@ -8,123 +8,42 @@ from database import (
     get_user_brawl_data, add_tokens_and_gems, add_brawler_to_user
 )
 
+# Barvy podle raritek
+RARITY_COLORS = {
+    "Rare": discord.Color.green(),
+    "Super Rare": discord.Color.blue(),
+    "Epic": discord.Color.purple(),
+    "Mythic": discord.Color.red(),
+    "Legendary": discord.Color.gold(),
+    "Ultra Legendary": discord.Color.from_rgb(148, 0, 211)  # Tmavě fialová / Purpurová
+}
+
 # Seznam Brawlerů rozdělený podle raritek
 BRAWLERS = {
     "Rare": [
-        {"name": "Nita", "color": discord.Color.green()},
-        {"name": "Colt", "color": discord.Color.green()},
-        {"name": "Bull", "color": discord.Color.green()},
-        {"name": "Brock", "color": discord.Color.green()},
-        {"name": "El Primo", "color": discord.Color.green()},
-        {"name": "Barley", "color": discord.Color.green()},
-        {"name": "Poco", "color": discord.Color.green()},
-        {"name": "Rosa", "color": discord.Color.green()}
+        "Nita", "Colt", "Bull", "Brock", "El Primo", "Barley", "Poco", "Rosa"
     ],
     "Super Rare": [
-        {"name": "Jessie", "color": discord.Color.blue()},
-        {"name": "Dynamike", "color": discord.Color.blue()},
-        {"name": "Tick", "color": discord.Color.blue()},
-        {"name": "8-Bit", "color": discord.Color.blue()},
-        {"name": "Rico", "color": discord.Color.blue()},
-        {"name": "Darryl", "color": discord.Color.blue()},
-        {"name": "Penny", "color": discord.Color.blue()},
-        {"name": "Carl", "color": discord.Color.blue()},
-        {"name": "Jacky", "color": discord.Color.blue()},
-        {"name": "Gus", "color": discord.Color.blue()}
+        "Jessie", "Dynamike", "Tick", "8-Bit", "Rico", "Darryl", "Penny", "Carl", "Jacky", "Gus"
     ],
     "Epic": [
-        {"name": "Bo", "color": discord.Color.purple()},
-        {"name": "Emz", "color": discord.Color.purple()},
-        {"name": "Stu", "color": discord.Color.purple()},
-        {"name": "Piper", "color": discord.Color.purple()},
-        {"name": "Pam", "color": discord.Color.purple()},
-        {"name": "Frank", "color": discord.Color.purple()},
-        {"name": "Bibi", "color": discord.Color.purple()},
-        {"name": "Bea", "color": discord.Color.purple()},
-        {"name": "Nani", "color": discord.Color.purple()},
-        {"name": "Edgar", "color": discord.Color.purple()},
-        {"name": "Griff", "color": discord.Color.purple()},
-        {"name": "Grom", "color": discord.Color.purple()},
-        {"name": "Bonnie", "color": discord.Color.purple()},
-        {"name": "Gale", "color": discord.Color.purple()},
-        {"name": "Colette", "color": discord.Color.purple()},
-        {"name": "Belle", "color": discord.Color.purple()},
-        {"name": "Ash", "color": discord.Color.purple()},
-        {"name": "Lola", "color": discord.Color.purple()},
-        {"name": "Sam", "color": discord.Color.purple()},
-        {"name": "Mandy", "color": discord.Color.purple()},
-        {"name": "Maisie", "color": discord.Color.purple()},
-        {"name": "Hank", "color": discord.Color.purple()},
-        {"name": "Pearl", "color": discord.Color.purple()},
-        {"name": "Larry", "color": discord.Color.purple()},
-        {"name": "Angelo", "color": discord.Color.purple()},
-        {"name": "Berry", "color": discord.Color.purple()},
-        {"name": "Shade", "color": discord.Color.purple()},
-        {"name": "Meeple", "color": discord.Color.purple()},
-        {"name": "Trunk", "color": discord.Color.purple()},
-        {"name": "Bolt", "color": discord.Color.purple()}
+        "Bo", "Emz", "Stu", "Piper", "Pam", "Frank", "Bibi", "Bea", "Nani", "Edgar", 
+        "Griff", "Grom", "Bonnie", "Gale", "Colette", "Belle", "Ash", "Lola", "Sam", 
+        "Mandy", "Maisie", "Hank", "Pearl", "Larry", "Angelo", "Berry", "Shade", "Meeple", "Trunk", "Bolt"
     ],
     "Mythic": [
-        {"name": "Mortis", "color": discord.Color.red()},
-        {"name": "Tara", "color": discord.Color.red()},
-        {"name": "Gene", "color": discord.Color.red()},
-        {"name": "Max", "color": discord.Color.red()},
-        {"name": "Mr. P", "color": discord.Color.red()},
-        {"name": "Sprout", "color": discord.Color.red()},
-        {"name": "Byron", "color": discord.Color.red()},
-        {"name": "Squeak", "color": discord.Color.red()},
-        {"name": "Lou", "color": discord.Color.red()},
-        {"name": "Ruffs", "color": discord.Color.red()},
-        {"name": "Buzz", "color": discord.Color.red()},
-        {"name": "Fang", "color": discord.Color.red()},
-        {"name": "Eve", "color": discord.Color.red()},
-        {"name": "Otis", "color": discord.Color.red()},
-        {"name": "Buster", "color": discord.Color.red()},
-        {"name": "Gray", "color": discord.Color.red()},
-        {"name": "Willow", "color": discord.Color.red()},
-        {"name": "Chuck", "color": discord.Color.red()},
-        {"name": "Mico", "color": discord.Color.red()},
-        {"name": "Lily", "color": discord.Color.red()},
-        {"name": "Ollie", "color": discord.Color.red()},
-        {"name": "Finx", "color": discord.Color.red()},
-        {"name": "Jae-Yong", "color": discord.Color.red()},
-        {"name": "Alli", "color": discord.Color.red()},
-        {"name": "Mina", "color": discord.Color.red()},
-        {"name": "Glowy", "color": discord.Color.red()},
-        {"name": "Damian", "color": discord.Color.red()},
-        {"name": "Janet", "color": discord.Color.red()},
-        {"name": "R-T", "color": discord.Color.red()},
-        {"name": "Doug", "color": discord.Color.red()},
-        {"name": "Charlie", "color": discord.Color.red()},
-        {"name": "Melodie", "color": discord.Color.red()},
-        {"name": "Clancy", "color": discord.Color.red()},
-        {"name": "Moe", "color": discord.Color.red()},
-        {"name": "Juju", "color": discord.Color.red()},
-        {"name": "Lumi", "color": discord.Color.red()},
-        {"name": "Zigy", "color": discord.Color.red()},
-        {"name": "Gigi", "color": discord.Color.red()},
-        {"name": "Najia", "color": discord.Color.red()},
-        {"name": "Starr Nova", "color": discord.Color.red()}
+        "Mortis", "Tara", "Gene", "Max", "Mr. P", "Sprout", "Byron", "Squeak", "Lou", 
+        "Ruffs", "Buzz", "Fang", "Eve", "Otis", "Buster", "Gray", "Willow", "Chuck", 
+        "Mico", "Lily", "Ollie", "Finx", "Jae-Yong", "Alli", "Mina", "Glowy", "Damian", 
+        "Janet", "R-T", "Doug", "Charlie", "Melodie", "Clancy", "Moe", "Juju", "Lumi", 
+        "Zigy", "Gigi", "Najia", "Starr Nova"
     ],
     "Legendary": [
-        {"name": "Spike", "color": discord.Color.gold()},
-        {"name": "Crow", "color": discord.Color.gold()},
-        {"name": "Leon", "color": discord.Color.gold()},
-        {"name": "Sandy", "color": discord.Color.gold()},
-        {"name": "Amber", "color": discord.Color.gold()},
-        {"name": "Meg", "color": discord.Color.gold()},
-        {"name": "Surge", "color": discord.Color.gold()},
-        {"name": "Chester", "color": discord.Color.gold()},
-        {"name": "Cordelius", "color": discord.Color.gold()},
-        {"name": "Kit", "color": discord.Color.gold()},
-        {"name": "Draco", "color": discord.Color.gold()},
-        {"name": "Kenji", "color": discord.Color.gold()},
-        {"name": "Pierce", "color": discord.Color.gold()},
-        {"name": "Nori", "color": discord.Color.gold()}
+        "Spike", "Crow", "Leon", "Sandy", "Amber", "Meg", "Surge", "Chester", 
+        "Cordelius", "Kit", "Draco", "Kenji", "Pierce", "Nori"
     ],
     "Ultra Legendary": [
-        {"name": "Kaze", "color": discord.Color.purple()},
-        {"name": "Sirius", "color": discord.Color.purple()}
+        "Kaze", "Sirius"
     ]
 }
 
@@ -135,20 +54,32 @@ BOX_RATES = {
     "mega_box": {"Rare": 10, "Super Rare": 20, "Epic": 35, "Mythic": 20.0, "Legendary": 12.0, "Ultra Legendary": 3.0}
 }
 
+# Spoření celkového počtu Brawlerů ve hře
+TOTAL_BRAWLERS_COUNT = sum(len(b_list) for b_list in BRAWLERS.values())
+
+def generate_progress_bar(current: int, total: int, length: int = 10) -> str:
+    """Generuje vizuální progress bar [████░░░░░░]"""
+    if total == 0:
+        return "░" * length
+    fraction = current / total
+    filled = int(round(length * fraction))
+    return "█" * filled + "░" * (length - filled)
+
 class BrawlCog(commands.Cog, name="brawl"):
     def __init__(self, bot):
         self.bot = bot
 
     # Pomocná funkce pro automatické vytvoření a přidělení role
-    async def _assign_brawler_role(self, guild: discord.Guild, member: discord.Member, brawler_info: dict):
-        role_name = f"🤖 {brawler_info['name']}"
+    async def _assign_brawler_role(self, guild: discord.Guild, member: discord.Member, brawler_name: str, rarity: str):
+        role_name = f"🤖 {brawler_name}"
         role = discord.utils.get(guild.roles, name=role_name)
+        color = RARITY_COLORS.get(rarity, discord.Color.default())
         
         if not role:
             try:
                 role = await guild.create_role(
                     name=role_name,
-                    color=brawler_info["color"],
+                    color=color,
                     reason="Automatické vytvoření role pro Brawler"
                 )
             except discord.Forbidden:
@@ -166,9 +97,9 @@ class BrawlCog(commands.Cog, name="brawl"):
         available_rarities = []
         weights = []
 
-        # Projdeme rarita po raritě a zkontrolujeme, zda v ní jsou ještě nevlastnění brawleři
+        # Projdeme raritu po raritě a zkontrolujeme nevlastněné brawlerů
         for rarity, weight in rates.items():
-            unowned = [b for b in BRAWLERS[rarity] if b["name"] not in owned_brawlers]
+            unowned = [b for b in BRAWLERS[rarity] if b not in owned_brawlers]
             if unowned:
                 available_rarities.append(rarity)
                 weights.append(weight)
@@ -178,7 +109,7 @@ class BrawlCog(commands.Cog, name="brawl"):
             return None, None
 
         chosen_rarity = random.choices(available_rarities, weights=weights, k=1)[0]
-        unowned_in_rarity = [b for b in BRAWLERS[chosen_rarity] if b["name"] not in owned_brawlers]
+        unowned_in_rarity = [b for b in BRAWLERS[chosen_rarity] if b not in owned_brawlers]
         chosen_brawler = random.choice(unowned_in_rarity)
 
         return chosen_rarity, chosen_brawler
@@ -191,22 +122,23 @@ class BrawlCog(commands.Cog, name="brawl"):
         await interaction.response.defer()
         
         user_data = await get_user_brawl_data(interaction.guild_id, interaction.user.id)
-        rarity, brawler = self._roll_brawler("brawl_box", user_data["brawlers"])
+        rarity, brawler_name = self._roll_brawler("brawl_box", user_data["brawlers"])
 
-        if brawler is None:
+        if brawler_name is None:
             return await interaction.followup.send("🏆 Už vlastníš úplně všechny Brawlery! Skvělá práce!", ephemeral=True)
 
-        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler["name"])
-        await self._assign_brawler_role(interaction.guild, interaction.user, brawler)
+        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler_name)
+        await self._assign_brawler_role(interaction.guild, interaction.user, brawler_name, rarity)
 
         embed = discord.Embed(
             title="📦 Brawl Box Otevřen!",
-            description=f"Padl ti noví Brawler: **{brawler['name']}**!\nRarita: **{rarity}**",
-            color=brawler["color"]
+            description=f"Padl ti nový Brawler: **{brawler_name}**!\nRarita: **{rarity}**",
+            color=RARITY_COLORS[rarity]
         )
         embed.set_footer(text="✨ Nový Brawler do sbírky! Role ti byla přidělena.")
         await interaction.followup.send(embed=embed)
 
+    @app_commands.checks.cooldown(1, 3, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="bigbox", description="Otevře Big Box (Stojí 10 Tokenů).")
     async def bigbox(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -218,23 +150,24 @@ class BrawlCog(commands.Cog, name="brawl"):
                 ephemeral=True
             )
 
-        rarity, brawler = self._roll_brawler("big_box", user_data["brawlers"])
+        rarity, brawler_name = self._roll_brawler("big_box", user_data["brawlers"])
 
-        if brawler is None:
+        if brawler_name is None:
             return await interaction.followup.send("🏆 Už vlastníš úplně všechny Brawlery! Tokeny ti zůstávají.", ephemeral=True)
 
         await add_tokens_and_gems(interaction.guild_id, interaction.user.id, tokens=-10)
-        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler["name"])
-        await self._assign_brawler_role(interaction.guild, interaction.user, brawler)
+        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler_name)
+        await self._assign_brawler_role(interaction.guild, interaction.user, brawler_name, rarity)
 
         embed = discord.Embed(
             title="🎁 Big Box Otevřen!",
-            description=f"Padl ti nový Brawler: **{brawler['name']}**!\nRarita: **{rarity}**",
-            color=brawler["color"]
+            description=f"Padl ti nový Brawler: **{brawler_name}**!\nRarita: **{rarity}**",
+            color=RARITY_COLORS[rarity]
         )
         embed.set_footer(text="🎉 Nový Brawler odemčen!")
         await interaction.followup.send(embed=embed)
 
+    @app_commands.checks.cooldown(1, 3, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.command(name="megabox", description="Otevře Mega Box s obří šancí na Legendárky (Stojí 80 Gemů).")
     async def megabox(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -246,19 +179,19 @@ class BrawlCog(commands.Cog, name="brawl"):
                 ephemeral=True
             )
 
-        rarity, brawler = self._roll_brawler("mega_box", user_data["brawlers"])
+        rarity, brawler_name = self._roll_brawler("mega_box", user_data["brawlers"])
 
-        if brawler is None:
+        if brawler_name is None:
             return await interaction.followup.send("🏆 Už vlastníš úplně všechny Brawlery! Gemy ti zůstávají.", ephemeral=True)
 
         await add_tokens_and_gems(interaction.guild_id, interaction.user.id, gems=-80)
-        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler["name"])
-        await self._assign_brawler_role(interaction.guild, interaction.user, brawler)
+        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler_name)
+        await self._assign_brawler_role(interaction.guild, interaction.user, brawler_name, rarity)
 
         embed = discord.Embed(
             title="💥 MEGA BOX Otevřen!",
-            description=f"Padl ti nový Brawler: **{brawler['name']}**!\nRarita: **{rarity}**",
-            color=brawler["color"]
+            description=f"Padl ti nový Brawler: **{brawler_name}**!\nRarita: **{rarity}**",
+            color=RARITY_COLORS[rarity]
         )
         embed.set_footer(text="🔥 Získal jsi nového Brawlera!")
         await interaction.followup.send(embed=embed)
@@ -268,8 +201,12 @@ class BrawlCog(commands.Cog, name="brawl"):
         await interaction.response.defer()
         user_data = await get_user_brawl_data(interaction.guild_id, interaction.user.id)
         
-        brawlers = user_data["brawlers"]
-        brawler_str = ", ".join(brawlers) if brawlers else "*Zatím nemáš žádné Brawlery.*"
+        owned_brawlers = user_data["brawlers"]
+        owned_count = len(owned_brawlers)
+        percentage = round((owned_count / TOTAL_BRAWLERS_COUNT) * 100, 1) if TOTAL_BRAWLERS_COUNT > 0 else 0
+        progress_bar = generate_progress_bar(owned_count, TOTAL_BRAWLERS_COUNT)
+
+        brawler_str = ", ".join(owned_brawlers) if owned_brawlers else "*Zatím nemáš žádné Brawlery.*"
 
         embed = discord.Embed(
             title=f"🎒 Inventář – {interaction.user.display_name}",
@@ -277,7 +214,36 @@ class BrawlCog(commands.Cog, name="brawl"):
         )
         embed.add_field(name="🪙 Tokeny", value=str(user_data["tokens"]), inline=True)
         embed.add_field(name="💎 Gemy", value=str(user_data["gems"]), inline=True)
-        embed.add_field(name="🏆 Vlastnění Brawleři", value=brawler_str, inline=False)
+        embed.add_field(
+            name=f"🏆 Sbírka ({owned_count}/{TOTAL_BRAWLERS_COUNT}) – {percentage}%",
+            value=f"`[{progress_bar}]`",
+            inline=False
+        )
+        embed.add_field(name="📜 Vlastnění Brawleři", value=brawler_str, inline=False)
+
+        await interaction.followup.send(embed=embed)
+
+    @app_commands.command(name="drop_rates", description="Zobrazí přehled šancí na vypadnutí Brawlerů z boxů.")
+    async def drop_rates(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        embed = discord.Embed(
+            title="📊 Šance na padnutí Brawlerů (Drop Rates)",
+            description="Přehled pravděpodobností pro jednotlivé typy boxů:",
+            color=discord.Color.blue()
+        )
+
+        for box_key, box_name in [("brawl_box", "📦 Brawl Box"), ("big_box", "🎁 Big Box"), ("mega_box", "💥 Mega Box")]:
+            rates = BOX_RATES[box_key]
+            rate_text = (
+                f"🟢 **Rare:** {rates['Rare']}%\n"
+                f"🔵 **Super Rare:** {rates['Super Rare']}%\n"
+                f"🟣 **Epic:** {rates['Epic']}%\n"
+                f"🔴 **Mythic:** {rates['Mythic']}%\n"
+                f"🟡 **Legendary:** {rates['Legendary']}%\n"
+                f"🔮 **Ultra Legendary:** {rates['Ultra Legendary']}%"
+            )
+            embed.add_field(name=box_name, value=rate_text, inline=True)
 
         await interaction.followup.send(embed=embed)
 
@@ -298,18 +264,20 @@ class BrawlCog(commands.Cog, name="brawl"):
 
     async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
         if isinstance(error, app_commands.CommandOnCooldown):
-            hours = int(error.retry_after // 3600)
-            minutes = int((error.retry_after % 3600) // 60)
-            seconds = int(error.retry_after % 60)
-            
-            time_str = ""
-            if hours > 0:
-                time_str += f"{hours}h "
-            if minutes > 0 or hours > 0:
-                time_str += f"{minutes}m "
-            time_str += f"{seconds}s"
-
-            message = f"⏳ Tento příkaz je na cooldownu! Další **Brawl Box** si můžeš vybrat za **{time_str}**."
+            retry_after = error.retry_after
+            if retry_after >= 60:
+                hours = int(retry_after // 3600)
+                minutes = int((retry_after % 3600) // 60)
+                seconds = int(retry_after % 60)
+                time_str = ""
+                if hours > 0:
+                    time_str += f"{hours}h "
+                if minutes > 0 or hours > 0:
+                    time_str += f"{minutes}m "
+                time_str += f"{seconds}s"
+                message = f"⏳ Tento příkaz je na cooldownu! Další použití za **{time_str}**."
+            else:
+                message = f"⏳ Počkej **{round(retry_after, 1)}s** před dalším použitím."
 
             if interaction.response.is_done():
                 await interaction.followup.send(message, ephemeral=True)
