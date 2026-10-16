@@ -17,7 +17,8 @@ class Database:
             self.pool = await asyncpg.create_pool(
                 dsn=db_url,
                 min_size=1,
-                max_size=10
+                max_size=5,
+                command_timeout=30
             )
             await self.init_db()
 
@@ -74,6 +75,8 @@ class Database:
             await conn.execute("ALTER TABLE guild_settings ADD COLUMN IF NOT EXISTS reset_on_fail INTEGER DEFAULT 1;")
             await conn.execute("ALTER TABLE counting_leaderboard ADD COLUMN IF NOT EXISTS daily_counts INTEGER DEFAULT 0;")
             await conn.execute("ALTER TABLE counting_leaderboard ADD COLUMN IF NOT EXISTS lifetime_counts INTEGER DEFAULT 0;")
+            from counting_store import init_counting
+            await init_counting(conn)
             print("🗄️ PostgreSQL Databáze byla úspěšně inicializována.")
 
     async def execute(self, query, *args):
