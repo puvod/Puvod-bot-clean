@@ -1,290 +1,511 @@
-import discord
-from discord.ext import commands
-from discord import app_commands
-import random
+from __future__ import annotations
+
 import asyncio
+import logging
+import math
+import random
+from collections import defaultdict
+from dataclasses import dataclass
+
+import discord
+from discord import app_commands
+from discord.ext import commands
 
 from database import (
-    get_user_brawl_data, add_tokens_and_gems, add_brawler_to_user
+    add_brawler_to_user,
+    add_tokens_and_gems,
+    get_user_brawl_data,
 )
 
-# Barvy podle raritek
+logger = logging.getLogger(__name__)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BRAWLEŘI A RARITY
+# ─────────────────────────────────────────────────────────────────────────────
+
 RARITY_COLORS = {
     "Rare": discord.Color.green(),
     "Super Rare": discord.Color.blue(),
     "Epic": discord.Color.purple(),
     "Mythic": discord.Color.red(),
     "Legendary": discord.Color.gold(),
-    "Ultra Legendary": discord.Color.from_rgb(148, 0, 211)  # Tmavě fialová / Purpurová
+    "Ultra Legendary": discord.Color.from_rgb(148, 0, 211),
 }
 
-# Seznam Brawlerů rozdělený podle raritek
+RARITY_EMOJIS = {
+    "Rare": "🟢",
+    "Super Rare": "🔵",
+    "Epic": "🟣",
+    "Mythic": "🔴",
+    "Legendary": "🟡",
+    "Ultra Legendary": "🔮",
+}
+
+# Aktualizovaný katalog, včetně Wendy / Cosmo / Vince (Mythic).
 BRAWLERS = {
     "Rare": [
-        "Nita", "Colt", "Bull", "Brock", "El Primo", "Barley", "Poco", "Rosa"
+        "Nita", "Colt", "Bull", "Brock", "El Primo", "Barley", "Poco", "Rosa",
     ],
     "Super Rare": [
-        "Jessie", "Dynamike", "Tick", "8-Bit", "Rico", "Darryl", "Penny", "Carl", "Jacky", "Gus"
+        "Jessie", "Dynamike", "Tick", "8-Bit", "Rico", "Darryl", "Penny",
+        "Carl", "Jacky", "Gus",
     ],
     "Epic": [
-        "Bo", "Emz", "Stu", "Piper", "Pam", "Frank", "Bibi", "Bea", "Nani", "Edgar", 
-        "Griff", "Grom", "Bonnie", "Gale", "Colette", "Belle", "Ash", "Lola", "Sam", 
-        "Mandy", "Maisie", "Hank", "Pearl", "Larry", "Angelo", "Berry", "Shade", "Meeple", "Trunk", "Bolt"
+        "Bo", "Emz", "Stu", "Piper", "Pam", "Frank", "Bibi", "Bea", "Nani",
+        "Edgar", "Griff", "Grom", "Bonnie", "Gale", "Colette", "Belle", "Ash",
+        "Lola", "Sam", "Mandy", "Maisie", "Hank", "Pearl", "Larry", "Angelo",
+        "Berry", "Shade", "Meeple", "Trunk", "Bolt",
     ],
     "Mythic": [
-        "Mortis", "Tara", "Gene", "Max", "Mr. P", "Sprout", "Byron", "Squeak", "Lou", 
-        "Ruffs", "Buzz", "Fang", "Eve", "Otis", "Buster", "Gray", "Willow", "Chuck", 
-        "Mico", "Lily", "Ollie", "Finx", "Jae-Yong", "Alli", "Mina", "Glowy", "Damian", 
-        "Janet", "R-T", "Doug", "Charlie", "Melodie", "Clancy", "Moe", "Juju", "Lumi", 
-        "Zigy", "Gigi", "Najia", "Starr Nova"
+        "Mortis", "Tara", "Gene", "Max", "Mr. P", "Sprout", "Byron", "Squeak",
+        "Lou", "Ruffs", "Buzz", "Fang", "Eve", "Otis", "Buster", "Gray",
+        "Willow", "Chuck", "Mico", "Lily", "Ollie", "Finx", "Jae-Yong",
+        "Alli", "Mina", "Glowy", "Damian", "Janet", "R-T", "Doug", "Charlie",
+        "Melodie", "Clancy", "Moe", "Juju", "Lumi", "Zigy", "Gigi",
+        "Najia", "Starr Nova", "Wendy", "Cosmo", "Vince",
     ],
     "Legendary": [
-        "Spike", "Crow", "Leon", "Sandy", "Amber", "Meg", "Surge", "Chester", 
-        "Cordelius", "Kit", "Draco", "Kenji", "Pierce", "Nori"
+        "Spike", "Crow", "Leon", "Sandy", "Amber", "Meg", "Surge", "Chester",
+        "Cordelius", "Kit", "Draco", "Kenji", "Pierce", "Nori",
     ],
-    "Ultra Legendary": [
-        "Kaze", "Sirius"
-    ]
+    "Ultra Legendary": ["Kaze", "Sirius"],
 }
 
-# Šance pro jednotlivé boxy (součet vah = 100)
+TOTAL_BRAWLERS_COUNT = sum(len(names) for names in BRAWLERS.values())
+ALL_BRAWLER_NAMES = frozenset(name for names in BRAWLERS.values() for name in names)
+
+if len(ALL_BRAWLER_NAMES) != TOTAL_BRAWLERS_COUNT:
+    raise ValueError("V katalogu BRAWLERS je některý Brawler uveden vícekrát.")
+
+
+# Původní šance zachované beze změny. Pokud už je rarita plně sesbíraná,
+# její váha se vyloučí a ostatní dostupné rarity se přepočítají poměrně.
 BOX_RATES = {
-    "brawl_box": {"Rare": 60, "Super Rare": 25, "Epic": 10, "Mythic": 4.0, "Legendary": 0.9, "Ultra Legendary": 0.1},
-    "big_box": {"Rare": 35, "Super Rare": 30, "Epic": 20, "Mythic": 10.0, "Legendary": 4.5, "Ultra Legendary": 0.5},
-    "mega_box": {"Rare": 10, "Super Rare": 20, "Epic": 35, "Mythic": 20.0, "Legendary": 12.0, "Ultra Legendary": 3.0}
+    "brawl_box": {
+        "Rare": 60, "Super Rare": 25, "Epic": 10,
+        "Mythic": 4.0, "Legendary": 0.9, "Ultra Legendary": 0.1,
+    },
+    "big_box": {
+        "Rare": 35, "Super Rare": 30, "Epic": 20,
+        "Mythic": 10.0, "Legendary": 4.5, "Ultra Legendary": 0.5,
+    },
+    "mega_box": {
+        "Rare": 10, "Super Rare": 20, "Epic": 35,
+        "Mythic": 20.0, "Legendary": 12.0, "Ultra Legendary": 3.0,
+    },
 }
 
-# Spoření celkového počtu Brawlerů ve hře
-TOTAL_BRAWLERS_COUNT = sum(len(b_list) for b_list in BRAWLERS.values())
+for _box_key, _rates in BOX_RATES.items():
+    if set(_rates) != set(BRAWLERS) or not math.isclose(sum(_rates.values()), 100.0):
+        raise ValueError(f"Chybná konfigurace šancí pro {_box_key}.")
 
-def generate_progress_bar(current: int, total: int, length: int = 10) -> str:
-    """Generuje vizuální progress bar [████░░░░░░]"""
-    if total == 0:
+
+@dataclass(frozen=True, slots=True)
+class BoxConfig:
+    name: str
+    icon: str
+    currency: str | None = None
+    price: int = 0
+
+
+BOXES = {
+    "brawl_box": BoxConfig(name="Brawl Box", icon="📦"),
+    "big_box": BoxConfig(name="Big Box", icon="🎁", currency="tokens", price=10),
+    "mega_box": BoxConfig(name="Mega Box", icon="💥", currency="gems", price=80),
+}
+
+CURRENCY_DETAILS = {
+    "tokens": ("🪙", "tokenů"),
+    "gems": ("💎", "gemů"),
+}
+
+
+def generate_progress_bar(current: int, total: int, length: int = 12) -> str:
+    """Zobrazí průběh sbírky a bezpečně omezí hodnoty do rozsahu 0–100 %."""
+    if total <= 0:
         return "░" * length
-    fraction = current / total
-    filled = int(round(length * fraction))
+    filled = round(length * min(max(current / total, 0.0), 1.0))
     return "█" * filled + "░" * (length - filled)
 
+
+def format_cooldown(seconds: float) -> str:
+    remaining = max(1, math.ceil(seconds))
+    hours, rest = divmod(remaining, 3600)
+    minutes, secs = divmod(rest, 60)
+    parts = []
+    if hours:
+        parts.append(f"{hours} h")
+    if minutes:
+        parts.append(f"{minutes} min")
+    if secs or not parts:
+        parts.append(f"{secs} s")
+    return " ".join(parts)
+
+
 class BrawlCog(commands.Cog, name="brawl"):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
+        # Zámek na hráče: omezuje dvojitý nákup/roll v jedné instanci bota.
+        self._player_locks: dict[tuple[int, int], asyncio.Lock] = defaultdict(asyncio.Lock)
+        # Zámek na server: současné vytvoření stejné role.
+        self._role_locks: dict[int, asyncio.Lock] = defaultdict(asyncio.Lock)
 
-    # Pomocná funkce pro automatické vytvoření a přidělení role
-    async def _assign_brawler_role(self, guild: discord.Guild, member: discord.Member, brawler_name: str, rarity: str):
-        role_name = f"🤖 {brawler_name}"
-        role = discord.utils.get(guild.roles, name=role_name)
-        color = RARITY_COLORS.get(rarity, discord.Color.default())
-        
-        if not role:
-            try:
-                role = await guild.create_role(
-                    name=role_name,
-                    color=color,
-                    reason="Automatické vytvoření role pro Brawler"
+    @staticmethod
+    async def _defer(interaction: discord.Interaction, *, ephemeral: bool = False) -> bool:
+        """Potvrdí slash příkaz před prací s DB. Vypršený interaction jen zaloguje."""
+        try:
+            await interaction.response.defer(thinking=True, ephemeral=ephemeral)
+            return True
+        except discord.NotFound as exc:
+            if exc.code == 10062:
+                logger.warning(
+                    "Discord interaction vypršela ještě před potvrzením "
+                    "(id=%s, command=%s). Prověř event loop/Render latenci.",
+                    interaction.id,
+                    getattr(interaction.command, "name", "?"),
                 )
-            except discord.Forbidden:
-                print(f"⚠️ Bot nemá práva ke spravování rolí na serveru {guild.name}")
-                return None
-        
-        if role and role not in member.roles:
-            try:
-                await member.add_roles(role)
-            except discord.Forbidden:
-                print(f"⚠️ Nemohu přidat roli {role_name} uživateli {member.display_name}")
+                return False
+            raise
 
-    def _roll_brawler(self, box_type: str, owned_brawlers: list):
-        rates = BOX_RATES[box_type]
-        available_rarities = []
-        weights = []
-
-        # Projdeme raritu po raritě a zkontrolujeme nevlastněné brawlerů
-        for rarity, weight in rates.items():
-            unowned = [b for b in BRAWLERS[rarity] if b not in owned_brawlers]
-            if unowned:
-                available_rarities.append(rarity)
-                weights.append(weight)
-
-        # Pokud už má uživatel úplně všechny Brawlery ze hry
-        if not available_rarities:
+    @staticmethod
+    def _roll_brawler(box_key: str, owned_brawlers: set[str]) -> tuple[str | None, str | None]:
+        """Vybere nevlastněného Brawlera; vzácnosti mají zadané váhy."""
+        available = {
+            rarity: [name for name in names if name not in owned_brawlers]
+            for rarity, names in BRAWLERS.items()
+        }
+        rarities = [rarity for rarity in BOX_RATES[box_key] if available[rarity]]
+        if not rarities:
             return None, None
 
-        chosen_rarity = random.choices(available_rarities, weights=weights, k=1)[0]
-        unowned_in_rarity = [b for b in BRAWLERS[chosen_rarity] if b not in owned_brawlers]
-        chosen_brawler = random.choice(unowned_in_rarity)
+        weights = [BOX_RATES[box_key][rarity] for rarity in rarities]
+        rarity = random.choices(rarities, weights=weights, k=1)[0]
+        return rarity, random.choice(available[rarity])
 
-        return chosen_rarity, chosen_brawler
+    async def _assign_brawler_role(
+        self,
+        guild: discord.Guild,
+        member: discord.Member,
+        brawler_name: str,
+        rarity: str,
+    ) -> str:
+        """Role jsou pouze bonus: chyba Discord oprávnění nikdy neruší DB odměnu."""
+        role_name = f"🤖 {brawler_name}"
+        try:
+            async with self._role_locks[guild.id]:
+                role = discord.utils.get(guild.roles, name=role_name)
+                if role is None:
+                    role = await guild.create_role(
+                        name=role_name,
+                        color=RARITY_COLORS[rarity],
+                        reason=f"Brawl Box • odemčen {brawler_name}",
+                    )
 
-    # --- PŘÍKAZY PRO ŠTĚSTÍ (BOXŮ) ---
+            if role in member.roles:
+                return "✅ Roli už máš"
+            await member.add_roles(role, reason=f"Brawl Box • {brawler_name}")
+            return "✅ Role přidělena"
+        except discord.Forbidden:
+            logger.warning("Chybí oprávnění k roli %s na serveru %s", role_name, guild.id)
+            return "⚠️ Bot nemá oprávnění přidat roli"
+        except discord.HTTPException:
+            logger.exception("Chyba Discord API při přidání role %s", role_name)
+            return "⚠️ Roli se nepodařilo přidat"
 
-    @app_commands.checks.cooldown(1, 21600, key=lambda i: (i.guild_id, i.user.id))
-    @app_commands.command(name="brawlbox", description="Otevře zdarma Brawl Box (dostupný jednou za 6 hodin).")
-    async def brawlbox(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        
-        user_data = await get_user_brawl_data(interaction.guild_id, interaction.user.id)
-        rarity, brawler_name = self._roll_brawler("brawl_box", user_data["brawlers"])
-
-        if brawler_name is None:
-            return await interaction.followup.send("🏆 Už vlastníš úplně všechny Brawlery! Skvělá práce!", ephemeral=True)
-
-        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler_name)
-        await self._assign_brawler_role(interaction.guild, interaction.user, brawler_name, rarity)
-
-        embed = discord.Embed(
-            title="📦 Brawl Box Otevřen!",
-            description=f"Padl ti nový Brawler: **{brawler_name}**!\nRarita: **{rarity}**",
-            color=RARITY_COLORS[rarity]
-        )
-        embed.set_footer(text="✨ Nový Brawler do sbírky! Role ti byla přidělena.")
-        await interaction.followup.send(embed=embed)
-
-    @app_commands.checks.cooldown(1, 3, key=lambda i: (i.guild_id, i.user.id))
-    @app_commands.command(name="bigbox", description="Otevře Big Box (Stojí 10 Tokenů).")
-    async def bigbox(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        
-        user_data = await get_user_brawl_data(interaction.guild_id, interaction.user.id)
-        if user_data["tokens"] < 10:
-            return await interaction.followup.send(
-                f"❌ Nemáš dostatek tokenů! Potřebuješ **10 tokenů**, ale máš pouze **{user_data['tokens']}**.",
-                ephemeral=True
-            )
-
-        rarity, brawler_name = self._roll_brawler("big_box", user_data["brawlers"])
-
-        if brawler_name is None:
-            return await interaction.followup.send("🏆 Už vlastníš úplně všechny Brawlery! Tokeny ti zůstávají.", ephemeral=True)
-
-        await add_tokens_and_gems(interaction.guild_id, interaction.user.id, tokens=-10)
-        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler_name)
-        await self._assign_brawler_role(interaction.guild, interaction.user, brawler_name, rarity)
+    @staticmethod
+    def _create_unlock_embed(
+        interaction: discord.Interaction,
+        box_key: str,
+        rarity: str,
+        brawler_name: str,
+        owned_after: int,
+        role_result: str,
+    ) -> discord.Embed:
+        box = BOXES[box_key]
+        emoji = RARITY_EMOJIS[rarity]
+        progress = 100 * owned_after / TOTAL_BRAWLERS_COUNT
 
         embed = discord.Embed(
-            title="🎁 Big Box Otevřen!",
-            description=f"Padl ti nový Brawler: **{brawler_name}**!\nRarita: **{rarity}**",
-            color=RARITY_COLORS[rarity]
+            title=f"{box.icon} {box.name}  •  OTEVŘENO!",
+            description=(
+                "## ✨ Nový Brawler odemčen!\n"
+                f"# {brawler_name}\n"
+                f"{emoji} **{rarity}**"
+            ),
+            color=RARITY_COLORS[rarity],
+            timestamp=discord.utils.utcnow(),
         )
-        embed.set_footer(text="🎉 Nový Brawler odemčen!")
-        await interaction.followup.send(embed=embed)
-
-    @app_commands.checks.cooldown(1, 3, key=lambda i: (i.guild_id, i.user.id))
-    @app_commands.command(name="megabox", description="Otevře Mega Box s obří šancí na Legendárky (Stojí 80 Gemů).")
-    async def megabox(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        
-        user_data = await get_user_brawl_data(interaction.guild_id, interaction.user.id)
-        if user_data["gems"] < 80:
-            return await interaction.followup.send(
-                f"❌ Nemáš dostatek gemů! Potřebuješ **80 Gemů**, ale máš pouze **{user_data['gems']}**.",
-                ephemeral=True
-            )
-
-        rarity, brawler_name = self._roll_brawler("mega_box", user_data["brawlers"])
-
-        if brawler_name is None:
-            return await interaction.followup.send("🏆 Už vlastníš úplně všechny Brawlery! Gemy ti zůstávají.", ephemeral=True)
-
-        await add_tokens_and_gems(interaction.guild_id, interaction.user.id, gems=-80)
-        await add_brawler_to_user(interaction.guild_id, interaction.user.id, brawler_name)
-        await self._assign_brawler_role(interaction.guild, interaction.user, brawler_name, rarity)
-
-        embed = discord.Embed(
-            title="💥 MEGA BOX Otevřen!",
-            description=f"Padl ti nový Brawler: **{brawler_name}**!\nRarita: **{rarity}**",
-            color=RARITY_COLORS[rarity]
-        )
-        embed.set_footer(text="🔥 Získal jsi nového Brawlera!")
-        await interaction.followup.send(embed=embed)
-
-    @app_commands.command(name="inventory", description="Zobrazí tvůj stav Tokenů, Gemů a získané Brawlery.")
-    async def inventory(self, interaction: discord.Interaction):
-        await interaction.response.defer()
-        user_data = await get_user_brawl_data(interaction.guild_id, interaction.user.id)
-        
-        owned_brawlers = user_data["brawlers"]
-        owned_count = len(owned_brawlers)
-        percentage = round((owned_count / TOTAL_BRAWLERS_COUNT) * 100, 1) if TOTAL_BRAWLERS_COUNT > 0 else 0
-        progress_bar = generate_progress_bar(owned_count, TOTAL_BRAWLERS_COUNT)
-
-        brawler_str = ", ".join(owned_brawlers) if owned_brawlers else "*Zatím nemáš žádné Brawlery.*"
-
-        embed = discord.Embed(
-            title=f"🎒 Inventář – {interaction.user.display_name}",
-            color=discord.Color.gold()
-        )
-        embed.add_field(name="🪙 Tokeny", value=str(user_data["tokens"]), inline=True)
-        embed.add_field(name="💎 Gemy", value=str(user_data["gems"]), inline=True)
+        embed.add_field(name="🏆 Sbírka", value=f"**{owned_after}/{TOTAL_BRAWLERS_COUNT}** ({progress:.1f} %)", inline=True)
+        embed.add_field(name="🤖 Discord role", value=role_result, inline=True)
         embed.add_field(
-            name=f"🏆 Sbírka ({owned_count}/{TOTAL_BRAWLERS_COUNT}) – {percentage}%",
-            value=f"`[{progress_bar}]`",
-            inline=False
+            name="📈 Postup sbírky",
+            value=f"`{generate_progress_bar(owned_after, TOTAL_BRAWLERS_COUNT)}`",
+            inline=False,
         )
-        embed.add_field(name="📜 Vlastnění Brawleři", value=brawler_str, inline=False)
+        embed.set_footer(text=f"Brawl System • {interaction.user.display_name}")
+        return embed
 
-        await interaction.followup.send(embed=embed)
+    async def _open_box(self, interaction: discord.Interaction, box_key: str) -> None:
+        """Jedna implementace pro všechny boxy – kontrola, roll, odečet, uložení."""
+        guild = interaction.guild
+        if guild is None or interaction.guild_id is None or not isinstance(interaction.user, discord.Member):
+            await interaction.followup.send("❌ Boxy lze otevírat jen na Discord serveru.", ephemeral=True)
+            return
 
-    @app_commands.command(name="drop_rates", description="Zobrazí přehled šancí na vypadnutí Brawlerů z boxů.")
-    async def drop_rates(self, interaction: discord.Interaction):
-        await interaction.response.defer()
+        box = BOXES[box_key]
+        key = (guild.id, interaction.user.id)
+
+        async with self._player_locks[key]:
+            user_data = await get_user_brawl_data(*key)
+            owned = set(user_data.get("brawlers") or [])
+            amount = int(user_data.get(box.currency, 0) or 0) if box.currency else 0
+
+            if box.currency and amount < box.price:
+                icon, noun = CURRENCY_DETAILS[box.currency]
+                await interaction.followup.send(
+                    f"{icon} **Nedostatek měny!** {box.name} stojí **{box.price} {noun}**. "
+                    f"Máš **{amount}** (chybí {box.price - amount}).",
+                    ephemeral=True,
+                )
+                return
+
+            rarity, brawler_name = self._roll_brawler(box_key, owned)
+            if rarity is None or brawler_name is None:
+                await interaction.followup.send(
+                    "🏆 **Máš kompletní sbírku!** Všechny dostupné Brawlery už vlastníš. "
+                    "Žádná měna se neodečetla.",
+                    ephemeral=True,
+                )
+                return
+
+            # Zápisy jsou oddělené, protože stávající database.py nemá transakční API.
+            # Při selhání přidání Brawlera se pokusíme měnu vrátit.
+            charged = False
+            try:
+                if box.currency == "tokens":
+                    await add_tokens_and_gems(*key, tokens=-box.price)
+                    charged = True
+                elif box.currency == "gems":
+                    await add_tokens_and_gems(*key, gems=-box.price)
+                    charged = True
+
+                await add_brawler_to_user(*key, brawler_name)
+            except Exception:
+                if charged:
+                    try:
+                        if box.currency == "tokens":
+                            await add_tokens_and_gems(*key, tokens=box.price)
+                        elif box.currency == "gems":
+                            await add_tokens_and_gems(*key, gems=box.price)
+                    except Exception:
+                        logger.exception(
+                            "KRITICKÉ: nepodařilo se vrátit %s za %s hráči %s na serveru %s",
+                            box.currency, box_key, interaction.user.id, guild.id,
+                        )
+                raise
+
+            owned_after = len((owned | {brawler_name}) & ALL_BRAWLER_NAMES)
+
+        role_result = await self._assign_brawler_role(guild, interaction.user, brawler_name, rarity)
+        embed = self._create_unlock_embed(
+            interaction, box_key, rarity, brawler_name, owned_after, role_result,
+        )
+        await interaction.followup.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # BOX PŘÍKAZY
+    # ─────────────────────────────────────────────────────────────────────────
+
+    @app_commands.guild_only()
+    @app_commands.checks.cooldown(1, 21600, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.command(name="brawlbox", description="Otevři zdarma Brawl Box (1× za 6 hodin).")
+    async def brawlbox(self, interaction: discord.Interaction):
+        if not await self._defer(interaction):
+            return
+        await self._open_box(interaction, "brawl_box")
+
+    @app_commands.guild_only()
+    @app_commands.checks.cooldown(1, 3, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.command(name="bigbox", description="Otevři Big Box za 10 tokenů.")
+    async def bigbox(self, interaction: discord.Interaction):
+        if not await self._defer(interaction):
+            return
+        await self._open_box(interaction, "big_box")
+
+    @app_commands.guild_only()
+    @app_commands.checks.cooldown(1, 3, key=lambda i: (i.guild_id, i.user.id))
+    @app_commands.command(name="megabox", description="Otevři Mega Box za 80 gemů.")
+    async def megabox(self, interaction: discord.Interaction):
+        if not await self._defer(interaction):
+            return
+        await self._open_box(interaction, "mega_box")
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # INVENTÁŘ A DROP RATES
+    # ─────────────────────────────────────────────────────────────────────────
+
+    @app_commands.guild_only()
+    @app_commands.command(name="inventory", description="Prohlédni si měnu, Brawlery a postup sbírky.")
+    async def inventory(self, interaction: discord.Interaction):
+        if not await self._defer(interaction):
+            return
+
+        data = await get_user_brawl_data(interaction.guild_id, interaction.user.id)
+        owned = set(data.get("brawlers") or []) & ALL_BRAWLER_NAMES
+        total = len(owned)
+        percent = 100 * total / TOTAL_BRAWLERS_COUNT
 
         embed = discord.Embed(
-            title="📊 Šance na padnutí Brawlerů (Drop Rates)",
-            description="Přehled pravděpodobností pro jednotlivé typy boxů:",
-            color=discord.Color.blue()
+            title=f"🎒 Brawl inventář • {discord.utils.escape_markdown(interaction.user.display_name)}",
+            description=(
+                f"**🏆 {total} / {TOTAL_BRAWLERS_COUNT} Brawlerů**  •  **{percent:.1f} %**\n"
+                f"`{generate_progress_bar(total, TOTAL_BRAWLERS_COUNT, 18)}`\n\n"
+                f"🪙 **Tokeny:** {int(data.get('tokens') or 0):,}\n"
+                f"💎 **Gemy:** {int(data.get('gems') or 0):,}"
+            ),
+            color=discord.Color.gold(),
+            timestamp=discord.utils.utcnow(),
         )
 
-        for box_key, box_name in [("brawl_box", "📦 Brawl Box"), ("big_box", "🎁 Big Box"), ("mega_box", "💥 Mega Box")]:
-            rates = BOX_RATES[box_key]
-            rate_text = (
-                f"🟢 **Rare:** {rates['Rare']}%\n"
-                f"🔵 **Super Rare:** {rates['Super Rare']}%\n"
-                f"🟣 **Epic:** {rates['Epic']}%\n"
-                f"🔴 **Mythic:** {rates['Mythic']}%\n"
-                f"🟡 **Legendary:** {rates['Legendary']}%\n"
-                f"🔮 **Ultra Legendary:** {rates['Ultra Legendary']}%"
+        for rarity, names in BRAWLERS.items():
+            matching = [name for name in names if name in owned]
+            value = ", ".join(f"`{name}`" for name in matching) if matching else "*Zatím žádný.*"
+            embed.add_field(
+                name=f"{RARITY_EMOJIS[rarity]} {rarity}  •  {len(matching)}/{len(names)}",
+                value=value,
+                inline=False,
             )
-            embed.add_field(name=box_name, value=rate_text, inline=True)
 
+        embed.set_thumbnail(url=interaction.user.display_avatar.url)
+        embed.set_footer(text="Sbírej Brawlery pomocí /brawlbox, /bigbox a /megabox")
+        await interaction.followup.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+
+    @app_commands.guild_only()
+    @app_commands.command(name="drop_rates", description="Zobraz šance a ceny všech boxů.")
+    async def drop_rates(self, interaction: discord.Interaction):
+        if not await self._defer(interaction):
+            return
+
+        embed = discord.Embed(
+            title="🎲 Brawl Box • Drop Rates",
+            description=(
+                "Šance na **jednoho nového Brawlera** podle jeho rarity.\n"
+                "*Když už máš celou raritu, její šance se poměrně rozdělí mezi zbývající rarity.*"
+            ),
+            color=discord.Color.blurple(),
+        )
+        for box_key, box in BOXES.items():
+            if box.currency:
+                icon, noun = CURRENCY_DETAILS[box.currency]
+                cost = f"{icon} {box.price} {noun}"
+            else:
+                cost = "🆓 Zdarma • každých 6 hodin"
+            lines = [
+                f"{RARITY_EMOJIS[rarity]} **{rarity}** — {chance:g} %"
+                for rarity, chance in BOX_RATES[box_key].items()
+            ]
+            embed.add_field(
+                name=f"{box.icon} {box.name}  •  {cost}",
+                value="\n".join(lines),
+                inline=False,
+            )
+
+        embed.set_footer(text="Šance se neodvíjí od počtu postav v dané raritě.")
         await interaction.followup.send(embed=embed)
 
-    # --- ADMIN PŘÍKAZ PRO PŘIDÁVÁNÍ TOKENŮ / GEMŮ ---
+    # ─────────────────────────────────────────────────────────────────────────
+    # ADMIN
+    # ─────────────────────────────────────────────────────────────────────────
 
+    @app_commands.guild_only()
     @app_commands.checks.has_permissions(administrator=True)
-    @app_commands.command(name="add_currency", description="[Admin] Přidá uživateli Tokeny nebo Gemy.")
-    @app_commands.describe(user="Vyber uživatele", tokens="Počet tokenů k přičtení", gems="Počet gemů k přičtení")
-    async def add_currency(self, interaction: discord.Interaction, user: discord.Member, tokens: int = 0, gems: int = 0):
-        await interaction.response.defer(ephemeral=True)
-        await add_tokens_and_gems(interaction.guild_id, user.id, tokens=tokens, gems=gems)
-        await interaction.followup.send(
-            f"✅ Uživatel {user.mention} obdržel **{tokens} Tokenů** a **{gems} Gemů**.",
-            ephemeral=True
+    @app_commands.command(name="add_currency", description="[Admin] Přidej uživateli tokeny nebo gemy.")
+    @app_commands.describe(
+        user="Uživatel, kterému chceš připsat měnu",
+        tokens="Počet tokenů (0 až 1 000 000)",
+        gems="Počet gemů (0 až 1 000 000)",
+    )
+    async def add_currency(
+        self,
+        interaction: discord.Interaction,
+        user: discord.Member,
+        tokens: app_commands.Range[int, 0, 1_000_000] = 0,
+        gems: app_commands.Range[int, 0, 1_000_000] = 0,
+    ):
+        if not await self._defer(interaction, ephemeral=True):
+            return
+        if tokens == 0 and gems == 0:
+            await interaction.followup.send("⚠️ Zadej alespoň jednu kladnou částku.", ephemeral=True)
+            return
+
+        key = (interaction.guild_id, user.id)
+        async with self._player_locks[key]:
+            await add_tokens_and_gems(*key, tokens=tokens, gems=gems)
+
+        embed = discord.Embed(
+            title="✅ Měna připsána",
+            description=f"Účet: **{discord.utils.escape_markdown(user.display_name)}**",
+            color=discord.Color.green(),
         )
+        embed.add_field(name="🪙 Tokeny", value=f"+{tokens:,}")
+        embed.add_field(name="💎 Gemy", value=f"+{gems:,}")
+        await interaction.followup.send(embed=embed, ephemeral=True)
+        logger.info("Admin %s připsal %s tokenů a %s gemů hráči %s", interaction.user.id, tokens, gems, user.id)
 
-    # --- ODCHYTÁVÁNÍ CHYB KÓDU (COOLDOWNY) ---
+    # ─────────────────────────────────────────────────────────────────────────
+    # CHYBOVÁ HLÁŠENÍ
+    # ─────────────────────────────────────────────────────────────────────────
 
-    async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
-        if isinstance(error, app_commands.CommandOnCooldown):
-            retry_after = error.retry_after
-            if retry_after >= 60:
-                hours = int(retry_after // 3600)
-                minutes = int((retry_after % 3600) // 60)
-                seconds = int(retry_after % 60)
-                time_str = ""
-                if hours > 0:
-                    time_str += f"{hours}h "
-                if minutes > 0 or hours > 0:
-                    time_str += f"{minutes}m "
-                time_str += f"{seconds}s"
-                message = f"⏳ Tento příkaz je na cooldownu! Další použití za **{time_str}**."
-            else:
-                message = f"⏳ Počkej **{round(retry_after, 1)}s** před dalším použitím."
-
+    @staticmethod
+    async def _send_error(interaction: discord.Interaction, message: str) -> None:
+        try:
             if interaction.response.is_done():
                 await interaction.followup.send(message, ephemeral=True)
             else:
                 await interaction.response.send_message(message, ephemeral=True)
-        else:
-            raise error
+        except discord.HTTPException as exc:
+            # Interakce může mezitím vypršet. Nesmíme kvůli tomu vyhazovat další chybu.
+            logger.warning("Nelze odeslat chybové hlášení pro interaction %s: %s", interaction.id, exc)
 
-async def setup(bot):
+    async def cog_app_command_error(
+        self,
+        interaction: discord.Interaction,
+        error: app_commands.AppCommandError,
+    ):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            await self._send_error(
+                interaction,
+                f"⏳ Příkaz je na cooldownu. Zkus to za **{format_cooldown(error.retry_after)}**.",
+            )
+            return
+
+        if isinstance(error, app_commands.MissingPermissions):
+            await self._send_error(interaction, "⛔ Tento příkaz může použít pouze administrátor.")
+            return
+
+        if isinstance(error, app_commands.NoPrivateMessage):
+            await self._send_error(interaction, "❌ Tento příkaz funguje jen na serveru.")
+            return
+
+        root_error = error.original if isinstance(error, app_commands.CommandInvokeError) else error
+        if isinstance(root_error, discord.NotFound) and root_error.code in (10062, 10015):
+            logger.warning("Discord interakce/webhook vypršela (id=%s, code=%s)", interaction.id, root_error.code)
+            return
+
+        logger.error(
+            "Chyba příkazu %s na serveru %s (uživatel %s)",
+            getattr(interaction.command, "name", "?"),
+            interaction.guild_id,
+            interaction.user.id,
+            exc_info=(type(root_error), root_error, root_error.__traceback__),
+        )
+        await self._send_error(
+            interaction,
+            "❌ Příkaz se nepodařilo dokončit. Zkus to znovu později. "
+            "Pokud problém přetrvá, kontaktuj administrátora.",
+        )
+
+
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(BrawlCog(bot))
