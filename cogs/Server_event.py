@@ -12,12 +12,18 @@ from database import db
 logger = logging.getLogger(__name__)
 CONFIG_CACHE_SECONDS = 45.0
 
-DEFAULT_WELCOME = "Vítej {user} na serveru **{server}**! 🎉 Teď nás je **{count}**."
+DEFAULT_WELCOME = "Ahoj {user}, vítej na **{server}**! Jsme rádi, že jsi tady. Rozkoukej se a užij si to s námi."
+DEFAULT_WELCOME_TITLE = "VÍTEJ NA {server}!"
+DEFAULT_WELCOME_COLOR = "#8B5CF6"
+DEFAULT_WELCOME_STYLE = "clean"
+DEFAULT_WELCOME_EMOJI = "✨"
 DEFAULT_GOODBYE = "**{username}** opustil(a) server **{server}**. 👋"
 
 CONFIG_SQL = """
     SELECT welcome_channel_id, goodbye_channel_id, logs_channel_id,
-           welcome_message, goodbye_message
+           welcome_message, goodbye_message,
+           welcome_title, welcome_emoji, welcome_color, welcome_banner,
+           welcome_rules_channel_id, welcome_style
       FROM guild_settings WHERE guild_id = $1
 """
 
@@ -29,6 +35,12 @@ class EventConfig:
     logs_channel_id: int | None = None
     welcome_message: str | None = None
     goodbye_message: str | None = None
+    welcome_title: str | None = None
+    welcome_emoji: str | None = None
+    welcome_color: str | None = None
+    welcome_banner: str | None = None
+    welcome_rules_channel_id: int | None = None
+    welcome_style: str | None = None
 
 
 def _safe(value: str, limit: int = 950) -> str:
@@ -53,6 +65,53 @@ def render_template(template: str, *, member: discord.Member,
     for key, value in subs.items():
         template = template.replace(key, value)
     return template[:1900]
+
+
+def make_welcome_embed(member: discord.Member, cfg: EventConfig) -> discord.Embed:
+    """Jediný renderer pro skutečné příchody i admin náhledy."""
+    guild = member.guild
+    style = cfg.welcome_style if cfg.welcome_style in ("clean", "minimal", "premium") else DEFAULT_WELCOME_STYLE
+    raw_color = cfg.welcome_color or DEFAULT_WELCOME_COLOR
+    try:
+        color = discord.Color(int(raw_color.lstrip("#"), 16))
+    except (ValueError, TypeError):
+        color = discord.Color(0x8B5CF6)
+
+    # Emoji je před uložením validované proti emoji serveru. Pokud bylo
+    # mezitím smazáno, Discord jej nemusí správně vykreslit, ale bot nespadne.
+    emoji = cfg.welcome_emoji or DEFAULT_WELCOME_EMOJI
+    title = render_template(cfg.welcome_title or DEFAULT_WELCOME_TITLE, member=member)
+    content = render_template(cfg.welcome_message or DEFAULT_WELCOME, member=member)
+
+    # Všechna možná @everyone a @role jsou navíc blokovaná v channel.send.
+    intro = f"{emoji}  **NOVÝ ČLEN NA SERVERU**"
+    if style == "minimal":
+        description = f"{emoji}  {content}"
+    elif style == "premium":
+        description = f"{intro}\n\n{content}\n\n*Vítej v naší komunitě. Tvoje místo už čekalo.*"
+    else:
+        description = f"{intro}\n\n{content}"
+
+    embed = discord.Embed(title=title[:256], description=description[:4096], color=color)
+    if guild.icon:
+        embed.set_author(name=f"{guild.name[:220]}  •  WELCOME", icon_url=guild.icon.url)
+    else:
+        embed.set_author(name=f"{guild.name[:220]}  •  WELCOME")
+    embed.set_thumbnail(url=member.display_avatar.url)
+
+    if style != "minimal":
+        embed.add_field(name="👤 Nový člen", value=f"**{discord.utils.escape_markdown(member.display_name[:100])}**", inline=True)
+        count = guild.member_count
+        embed.add_field(name="👥 Počet členů", value=f"**{count:,}**" if count is not None else "**—**", inline=True)
+        if cfg.welcome_rules_channel_id and guild.get_channel(int(cfg.welcome_rules_channel_id)):
+            embed.add_field(name="📜 Začni tady", value=f"<#{cfg.welcome_rules_channel_id}>", inline=False)
+    elif cfg.welcome_rules_channel_id and guild.get_channel(int(cfg.welcome_rules_channel_id)):
+        embed.add_field(name="📜 Pravidla", value=f"<#{cfg.welcome_rules_channel_id}>", inline=False)
+
+    if cfg.welcome_banner:
+        embed.set_image(url=cfg.welcome_banner)
+    embed.set_footer(text="PUVOD  •  Užij si pobyt na serveru ✦")
+    return embed
 
 
 class ServerEvents(commands.Cog):
@@ -117,13 +176,7 @@ class ServerEvents(commands.Cog):
             return
         channel = self._channel(member.guild, cfg.welcome_channel_id)
         if channel is not None:
-            text = render_template(cfg.welcome_message or DEFAULT_WELCOME, member=member)
-            embed = discord.Embed(title="👋 Vítej mezi námi!", description=text,
-                                  color=discord.Color.green())
-            embed.set_thumbnail(url=member.display_avatar.url)
-            embed.add_field(name="📅 Discord účet vytvořen", value=discord.utils.format_dt(member.created_at, style="D"))
-            embed.set_footer(text=f"ID člena: {member.id}")
-            await self._send(channel, embed, ping_member=member)
+            await self._send(channel, make_welcome_embed(member, cfg), ping_member=member)
 
         embed = discord.Embed(title="📥 Člen se připojil", color=discord.Color.green(),
                               description=f"{_safe(member.display_name, 150)} (`{member.id}`)")
