@@ -1,87 +1,154 @@
-import os
+from __future__ import annotations
+
 import asyncio
+import logging
+import os
+from pathlib import Path
+
 import discord
+from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from web import keep_alive
-from database import db
 from cogs.roles import RankSelectView
+from database import db
+from web import keep_alive
+
 
 load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
 
-intents = discord.Intents.all()
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+)
+logger = logging.getLogger("puvod.main")
+
+COGS_DIRECTORY = Path(__file__).resolve().parent / "cogs"
+
 
 class MyBot(commands.Bot):
-    def __init__(self):
+    def __init__(self) -> None:
+        # Ponecháváme původní intents kvůli logování, welcome a Revive.
+        intents = discord.Intents.all()
         super().__init__(command_prefix="!", intents=intents)
 
-    async def setup_hook(self):
-        # Persistentní tlačítka
+    async def setup_hook(self) -> None:
+        # setup_hook proběhne právě jednou při startu této instance.
         self.add_view(RankSelectView())
-        print("🔘 Persistentní tlačítka byla zaregistrována.")
+        logger.info("Persistentní menu Brawl ranků bylo zaregistrováno")
 
-        # Načtení všech cogů
-        for filename in os.listdir("./cogs"):
-            if filename.endswith(".py"):
-                await self.load_extension(f"cogs.{filename[:-3]}")
-                print(f"📦 Cog '{filename}' byl úspěšně načten.")
+        if not COGS_DIRECTORY.is_dir():
+            raise RuntimeError(f"Složka cogů nebyla nalezena: {COGS_DIRECTORY}")
 
-        # Synchronizace Slash příkazů
-        await self.tree.sync()
-        print("🔄 Lomítkové příkazy byly synchronizovány.")
+        cog_files = sorted(
+            path for path in COGS_DIRECTORY.glob("*.py")
+            if not path.name.startswith("_")
+        )
 
-    async def on_ready(self):
-        print(f"🤖 Bot {self.user.name} je ONLINE a připraven k akci!")
-        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="oba servery"))
+        for path in cog_files:
+            extension = f"cogs.{path.stem}"
+            try:
+                await self.load_extension(extension)
+                logger.info("Načten cog: %s", extension)
+            except Exception:
+                # Nezamaskujeme původní chybu dalšími pokusy o spuštění.
+                logger.exception("Nepodařilo se načíst cog %s", extension)
+                raise
 
-bot = MyBot()
-
-# Zachycení chyb ze Slash příkazů bez padání na mrtvých interakcích
-@bot.tree.error
-async def on_app_command_error(interaction: discord.Interaction, error: Exception):
-    cmd_name = interaction.command.name if interaction.command else "unknown"
-    print(f"❌ Chyba při vykonávání příkazu /{cmd_name}: {error}")
-    
-    message = "⚠️ Při zpracování příkazu došlo k chybě v databázi nebo aplikaci."
-    
-    try:
-        if interaction.response.is_done():
-            await interaction.followup.send(message, ephemeral=True)
-        else:
-            await interaction.response.send_message(message, ephemeral=True)
-    except discord.errors.NotFound:
-        # Interakce vypršela nebo byla smazána klientem — ignorujeme bez pádů v konzoli
-        pass
-
-async def start_bot_safely():
-    while True:
         try:
-            print("🚀 Pokouším se přihlásit k Discord API...")
-            await bot.start(TOKEN)
-        except discord.errors.HTTPException as e:
-            if e.status == 429:
-                print("⚠️ Detekován Rate Limit (429)! Zkouším se znovu připojit za 5 minut...")
-                await asyncio.sleep(300)
-            else:
-                print(f"❌ Nastala chyby při připojování: {e}")
-                await asyncio.sleep(30)
-        except Exception as e:
-            print(f"❌ Kritické selhání: {e}")
-            await asyncio.sleep(30)
+            synced = await self.tree.sync()
+        except Exception:
+            logger.exception("Synchronizace slash příkazů selhala")
+            raise
+        else:
+            logger.info("Synchronizováno %d globálních slash příkazů", len(synced))
 
-async def main():
-    # Připojení k databázi proběhne JEN JEDNOU před spuštěním bota
-    await db.connect()
-    print("🗄️ Databáze byla úspěšně připojena.")
-    
-    await start_bot_safely()
+    async def on_ready(self) -> None:
+        if self.user is None:
+            return
+        logger.info("Bot je ONLINE jako %s (ID: %s)", self.user, self.user.id)
+        try:
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching,
+                    name="oba servery",
+                )
+            )
+        except discord.HTTPException:
+            logger.warning("Nepodařilo se změnit aktivitu bota", exc_info=True)
+
+
+
+async def main() -> None:
+    token = os.getenv("DISCORD_TOKEN")
+    if not token:
+        raise RuntimeError("Chybí DISCORD_TOKEN v proměnných prostředí")
+
+    try:
+        await db.connect()
+        logger.info("Databáze PostgreSQL / Supabase je připojená")
+
+        # Kontextový manažer vždy korektně uzavře HTTP session klienta.
+        async with MyBot() as bot:
+            @bot.tree.error
+            async def on_tree_error(
+                interaction: discord.Interaction,
+                error: app_commands.AppCommandError,
+            ) -> None:
+                command_name = (
+                    interaction.command.qualified_name
+                    if interaction.command is not None
+                    else "neznámý"
+                )
+                original = (
+                    error.original
+                    if isinstance(error, app_commands.CommandInvokeError)
+                    else error
+                )
+                logger.error(
+                    "Chyba slash příkazu /%s (server=%s, uživatel=%s)",
+                    command_name,
+                    interaction.guild_id,
+                    interaction.user.id,
+                    exc_info=(type(original), original, original.__traceback__),
+                )
+
+                if isinstance(original, discord.NotFound) and original.code in (10062, 10015):
+                    # Discord interakce/webhook už vypršel; další odpověď není možná.
+                    return
+
+                message = "❌ Příkaz se nepodařilo dokončit. Zkus to znovu později."
+                if isinstance(original, app_commands.MissingPermissions):
+                    message = "⛔ Nemáš oprávnění k použití tohoto příkazu."
+                elif isinstance(original, app_commands.CommandOnCooldown):
+                    message = f"⏳ Zkus to za {original.retry_after:.1f} sekundy."
+
+                try:
+                    if interaction.response.is_done():
+                        await interaction.followup.send(message, ephemeral=True)
+                    else:
+                        await interaction.response.send_message(message, ephemeral=True)
+                except discord.HTTPException:
+                    logger.warning("Odeslání chybové zprávy do Discordu se nezdařilo", exc_info=True)
+
+            # discord.py má vlastní automatický reconnect; nový while True není potřeba.
+            logger.info("Spouštím Discord bota...")
+            await bot.start(token, reconnect=True)
+    finally:
+        if db.pool is not None:
+            await db.pool.close()
+            db.pool = None
+            logger.info("Připojení k databázi bylo uzavřeno")
+
 
 if __name__ == "__main__":
     keep_alive()
-    print("🌐 Webový server FastAPI běží na pozadí.")
+    logger.info("FastAPI health endpoint byl spuštěn")
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("🛑 Bot byl ručně vypnut.")
+        logger.info("Bot byl ručně zastaven")
+    except Exception:
+        # Proces skončí s chybou – Render může spustit novou, ČISTOU instanci.
+        logger.exception("Kritické selhání při spouštění bota")
+        raise
