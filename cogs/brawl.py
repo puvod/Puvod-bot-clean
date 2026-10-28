@@ -88,6 +88,7 @@ BOXES = {
 }
 CURRENCY = {"tokens": ("🪙", "tokenů"), "gems": ("💎", "gemů")}
 FREE_BOX_COOLDOWN_SECONDS = 6 * 60 * 60
+BLING_BOX_REWARDS = {"brawl_box": 15, "big_box": 35, "mega_box": 90}
 
 # Tři krátké vizuální fáze: Discord neumí skutečnou animaci embedu,
 # proto postupně editujeme jednu zprávu. Jen 3 edity, šetrné k API.
@@ -145,6 +146,8 @@ class BoxResult:
     tokens: int = 0
     gems: int = 0
     retry_seconds: int = 0
+    blings: int = 0
+    bling_reward: int = 0
 
 
 class BrawlCog(commands.Cog, name="brawl"):
@@ -160,7 +163,11 @@ class BrawlCog(commands.Cog, name="brawl"):
             "ALTER TABLE public.user_brawl "
             "ADD COLUMN IF NOT EXISTS free_box_last_opened TIMESTAMPTZ"
         )
-        logger.info("Brawl: Supabase cooldown free boxu je připraven.")
+        await db.execute(
+            "ALTER TABLE public.user_brawl "
+            "ADD COLUMN IF NOT EXISTS blings INTEGER NOT NULL DEFAULT 0"
+        )
+        logger.info("Brawl: Supabase cooldown a Blingy jsou připravené.")
 
     @staticmethod
     async def _defer(interaction: discord.Interaction, *, ephemeral: bool = False) -> bool:
@@ -242,10 +249,12 @@ class BrawlCog(commands.Cog, name="brawl"):
                         "UPDATE user_brawl SET "
                         "brawlers=$1, tokens=tokens-$2, gems=gems-$3, "
                         "free_box_last_opened=CASE WHEN $6::boolean THEN NOW() "
-                        "ELSE free_box_last_opened END "
-                        "WHERE guild_id=$4 AND user_id=$5 RETURNING tokens, gems",
+                        "ELSE free_box_last_opened END, "
+                        "blings=COALESCE(blings,0)+$7 "
+                        "WHERE guild_id=$4 AND user_id=$5 RETURNING tokens, gems, blings",
                         ",".join([*current, brawler]), token_price, gem_price,
                         str(guild_id), str(user_id), box_id == "brawl_box",
+                        BLING_BOX_REWARDS[box_id],
                     )
                     if updated is None:
                         raise RuntimeError("Nepodařilo se uložit nového Brawlera.")
@@ -253,18 +262,20 @@ class BrawlCog(commands.Cog, name="brawl"):
                         status="ok", rarity=rarity, brawler=brawler,
                         owned_count=len((owned | {brawler}) & ALL_BRAWLERS),
                         tokens=int(updated["tokens"]), gems=int(updated["gems"]),
+                        blings=int(updated["blings"]),
+                        bling_reward=BLING_BOX_REWARDS[box_id],
                     )
 
     @staticmethod
     async def _profile(guild_id: int, user_id: int) -> dict:
         """Načte měnu, sbírku a stav free boxu."""
         row = await db.fetchrow(
-            "SELECT tokens, gems, brawlers, free_box_last_opened, NOW() AS db_now "
+            "SELECT tokens, gems, blings, brawlers, free_box_last_opened, NOW() AS db_now "
             "FROM user_brawl WHERE guild_id=$1 AND user_id=$2",
             str(guild_id), str(user_id),
         )
         if row is None:
-            return {"tokens": 0, "gems": 0, "brawlers": [], "free_cooldown_seconds": 0}
+            return {"tokens": 0, "gems": 0, "blings": 0, "brawlers": [], "free_cooldown_seconds": 0}
         last = row["free_box_last_opened"]
         seconds_left = max(
             0, math.ceil((
@@ -274,6 +285,7 @@ class BrawlCog(commands.Cog, name="brawl"):
         return {
             "tokens": int(row["tokens"] or 0),
             "gems": int(row["gems"] or 0),
+            "blings": int(row["blings"] or 0),
             "brawlers": [b.strip() for b in (row["brawlers"] or "").split(",") if b.strip()],
             "free_cooldown_seconds": seconds_left,
         }
@@ -316,6 +328,11 @@ class BrawlCog(commands.Cog, name="brawl"):
             timestamp=discord.utils.utcnow(),
         )
         embed.add_field(
+            name="✨ Odměna za otevření",
+            value=f"🔷 **+{result.bling_reward} Blingů** na skiny!",
+            inline=False,
+        )
+        embed.add_field(
             name="🏆 Tvoje sbírka",
             value=(
                 f"**{result.owned_count}/{TOTAL_BRAWLERS_COUNT}** • **{percent:.1f} %**\n"
@@ -325,7 +342,9 @@ class BrawlCog(commands.Cog, name="brawl"):
         )
         embed.add_field(
             name="💰 Zůstatek po otevření",
-            value=f"🪙 **{readable_number(result.tokens)}** tokenů\n💎 **{readable_number(result.gems)}** gemů",
+            value=(f"🪙 **{readable_number(result.tokens)}** tokenů\n"
+                   f"💎 **{readable_number(result.gems)}** gemů\n"
+                   f"🔷 **{readable_number(result.blings)}** Blingů"),
             inline=True,
         )
         embed.add_field(
@@ -454,6 +473,7 @@ class BrawlCog(commands.Cog, name="brawl"):
                 f"🏆 **{total}/{TOTAL_BRAWLERS_COUNT} Brawlerů**  •  **{percent:.1f} %**\n"
                 f"`{bar(total, TOTAL_BRAWLERS_COUNT, 18)}`\n\n"
                 f"🪙 **{readable_number(tokens)} tokenů**  •  💎 **{readable_number(gems)} gemů**"
+                f"  •  🔷 **{readable_number(data['blings'])} Blingů**"
             ),
             color=discord.Color.gold(),
             timestamp=discord.utils.utcnow(),
@@ -485,7 +505,7 @@ class BrawlCog(commands.Cog, name="brawl"):
                 inline=False,
             )
         embed.set_thumbnail(url=interaction.user.display_avatar.url)
-        embed.set_footer(text="Boxy: /brawlbox • /bigbox • /megabox | Obchod: /boxshop")
+        embed.set_footer(text="Boxy: /brawlbox • /bigbox • /megabox | Skiny: /skinshop • Daily: /dailyshop")
         await interaction.followup.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
 
     @app_commands.guild_only()
@@ -501,7 +521,8 @@ class BrawlCog(commands.Cog, name="brawl"):
             description=(
                 "Vyber box podle ceny a šancí na vzácné postavy.\n\n"
                 f"**Tvoje peněženka**\n🪙 {readable_number(tokens)} tokenů  •  "
-                f"💎 {readable_number(gems)} gemů"
+                f"💎 {readable_number(gems)} gemů  •  "
+                f"🔷 {readable_number(data['blings'])} Blingů"
             ),
             color=discord.Color.blurple(),
             timestamp=discord.utils.utcnow(),
@@ -530,7 +551,7 @@ class BrawlCog(commands.Cog, name="brawl"):
             ),
             inline=False,
         )
-        embed.set_footer(text="Šance: /drop_rates • Každý box dává 1 nového Brawlera • Zakoupení má cooldown 3 s")
+        embed.set_footer(text="Šance: /drop_rates • Blingy: /blings • Denní odměna: /dailyshop • Skiny: /skinshop")
         await interaction.followup.send(embed=embed)
 
     @app_commands.guild_only()
