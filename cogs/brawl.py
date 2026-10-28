@@ -167,7 +167,11 @@ class BrawlCog(commands.Cog, name="brawl"):
             "ALTER TABLE public.user_brawl "
             "ADD COLUMN IF NOT EXISTS blings INTEGER NOT NULL DEFAULT 0"
         )
-        logger.info("Brawl: Supabase cooldown a Blingy jsou připravené.")
+        await db.execute(
+            "ALTER TABLE public.user_brawl "
+            "ADD COLUMN IF NOT EXISTS equipped_skins JSONB NOT NULL DEFAULT '{}'::jsonb"
+        )
+        logger.info("Brawl: Supabase cooldown, Blingy a aktivní skiny jsou připravené.")
 
     @staticmethod
     async def _defer(interaction: discord.Interaction, *, ephemeral: bool = False) -> bool:
@@ -270,12 +274,14 @@ class BrawlCog(commands.Cog, name="brawl"):
     async def _profile(guild_id: int, user_id: int) -> dict:
         """Načte měnu, sbírku a stav free boxu."""
         row = await db.fetchrow(
-            "SELECT tokens, gems, blings, brawlers, free_box_last_opened, NOW() AS db_now "
+            "SELECT tokens, gems, blings, brawlers, equipped_skins, "
+            "free_box_last_opened, NOW() AS db_now "
             "FROM user_brawl WHERE guild_id=$1 AND user_id=$2",
             str(guild_id), str(user_id),
         )
         if row is None:
-            return {"tokens": 0, "gems": 0, "blings": 0, "brawlers": [], "free_cooldown_seconds": 0}
+            return {"tokens": 0, "gems": 0, "blings": 0, "brawlers": [],
+                    "equipped_skins": {}, "free_cooldown_seconds": 0}
         last = row["free_box_last_opened"]
         seconds_left = max(
             0, math.ceil((
@@ -286,6 +292,7 @@ class BrawlCog(commands.Cog, name="brawl"):
             "tokens": int(row["tokens"] or 0),
             "gems": int(row["gems"] or 0),
             "blings": int(row["blings"] or 0),
+            "equipped_skins": dict(row["equipped_skins"] or {}),
             "brawlers": [b.strip() for b in (row["brawlers"] or "").split(",") if b.strip()],
             "free_cooldown_seconds": seconds_left,
         }
@@ -504,6 +511,19 @@ class BrawlCog(commands.Cog, name="brawl"):
                 value=detail,
                 inline=False,
             )
+        equipped = data.get("equipped_skins") or {}
+        if equipped:
+            selected = [
+                f"✨ **{character}**: {skin_id.split('|', 1)[-1]}"
+                for character, skin_id in sorted(equipped.items())
+                if character in owned and isinstance(skin_id, str)
+            ]
+            if selected:
+                details = "\n".join(selected[:12])
+                if len(selected) > 12:
+                    details += f"\n… a dalších {len(selected) - 12}"
+                embed.add_field(name="🎨 Tvoje vybavené skiny",
+                                value=details[:1024], inline=False)
         embed.set_thumbnail(url=interaction.user.display_avatar.url)
         embed.set_footer(text="Boxy: /brawlbox • /bigbox • /megabox | Skiny: /skinshop • Daily: /dailyshop")
         await interaction.followup.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
