@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
@@ -206,11 +207,17 @@ class BrawlShopCog(commands.Cog):
             "skin_inventory, equipped_skins FROM public.user_brawl "
             "WHERE guild_id=$1 AND user_id=$2", str(guild_id), str(user_id),
         )
-        return dict(row) if row else {
-            "tokens": 0, "gems": 0, "blings": 0,
-            "last_daily_claim_date": None, "brawlers": "",
-            "skin_inventory": [], "equipped_skins": {},
-        }
+        if row is None:
+            return {
+                "tokens": 0, "gems": 0, "blings": 0,
+                "last_daily_claim_date": None, "brawlers": "",
+                "skin_inventory": [], "equipped_skins": {},
+            }
+        account = dict(row)
+        equipped_raw = account.get("equipped_skins")
+        equipped = json.loads(equipped_raw) if isinstance(equipped_raw, str) else equipped_raw
+        account["equipped_skins"] = equipped if isinstance(equipped, dict) else {}
+        return account
 
     async def claim_daily(self, interaction: discord.Interaction) -> None:
         if interaction.guild_id is None:
