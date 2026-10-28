@@ -308,8 +308,13 @@ class BrawlShopCog(commands.Cog):
                 inline=False,
             )
             embed.set_footer(text="Skins: /skinshop • vlastní skiny: /myskins")
-            view = DailyClaimView(self) if not claimed else None
-            await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+            if claimed:
+                # discord.py rejects view=None; omit the parameter entirely.
+                await interaction.followup.send(embed=embed, ephemeral=True)
+            else:
+                await interaction.followup.send(
+                    embed=embed, view=DailyClaimView(self), ephemeral=True
+                )
         except Exception:
             logger.exception("Daily shop display failed")
             await interaction.followup.send("❌ Obchod se nepodařilo načíst.", ephemeral=True)
