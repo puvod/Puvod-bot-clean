@@ -67,7 +67,7 @@ SKINS = {
     "Maisie": ["Tech Maisie","Marauder Maisie"],
     "Hank": ["Shark Tank Hank","Rodeo Hank"],
     "Pearl": ["Vintage Pearl","Porcelain Pearl"],
-    "Larry": ["Controller Larry & Lawrie"],
+    "Larry": ["Larry & Lawrie Controllers","Glitch Larry & Lawrie"],
     "Angelo": ["Elf Angelo","Dionysus Angelo"],
     "Berry": ["Dark Horse Berry","Pegasus Berry"],
     "Shade": ["Cinema Shade","Street Shade"],
@@ -128,7 +128,7 @@ SKINS = {
     "Draco": ["Dark Knight Draco","Eddie Draco"],
     "Kenji": ["Oni Kenji","Fruit Samurai Kenji"],
     "Pierce": ["High Stakes Pierce","Knight Pierce"],
-    "Nori": ["True Silver Nori"],
+    "Nori": ["Nano Nori","True Silver Nori"],
     "Kaze": ["Fruity Kaze","Clockwork Kaze"],
     "Sirius": ["True Silver Sirius"],
 }
@@ -234,20 +234,22 @@ class BrawlShopCog(commands.Cog):
                     )
                     if row is None:
                         raise RuntimeError("Chybi profil hrace")
-                    if row["last_daily_claim_date"] == day:
-                        await interaction.followup.send(
-                            "✅ Dnešní FREE odměnu už máš. Další bude o půlnoci (Praha).",
-                            ephemeral=True,
+                    already_claimed = row["last_daily_claim_date"] == day
+                    if not already_claimed:
+                        result = await conn.fetchrow(
+                            "UPDATE public.user_brawl SET "
+                            "tokens=COALESCE(tokens,0)+$3, gems=COALESCE(gems,0)+$4, "
+                            "blings=COALESCE(blings,0)+$5, last_daily_claim_date=$6 "
+                            "WHERE guild_id=$1 AND user_id=$2 "
+                            "RETURNING tokens, gems, blings",
+                            guild_id, user_id, tokens, gems, blings, day,
                         )
-                        return
-                    result = await conn.fetchrow(
-                        "UPDATE public.user_brawl SET "
-                        "tokens=COALESCE(tokens,0)+$3, gems=COALESCE(gems,0)+$4, "
-                        "blings=COALESCE(blings,0)+$5, last_daily_claim_date=$6 "
-                        "WHERE guild_id=$1 AND user_id=$2 "
-                        "RETURNING tokens, gems, blings",
-                        guild_id, user_id, tokens, gems, blings, day,
-                    )
+            if already_claimed:
+                await interaction.followup.send(
+                    "✅ Dnešní FREE odměnu už máš. Další bude o půlnoci (Praha).",
+                    ephemeral=True,
+                )
+                return
             embed = discord.Embed(
                 title="🎁 DAILY FREE • VYZVEDNUTO",
                 description=(
