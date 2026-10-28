@@ -612,6 +612,7 @@ class BrawlCog(commands.Cog, name="brawl"):
             "SELECT user_id, "
             "COALESCE(array_length(string_to_array(NULLIF(brawlers, ''), ','), 1), 0) "
             "AS brawler_count FROM user_brawl WHERE guild_id=$1 "
+            "AND brawlers IS NOT NULL AND brawlers <> '' "
             "ORDER BY brawler_count DESC, user_id ASC LIMIT 10",
             str(interaction.guild_id),
         )
