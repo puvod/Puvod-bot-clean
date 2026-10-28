@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import math
 import random
@@ -288,11 +289,15 @@ class BrawlCog(commands.Cog, name="brawl"):
                 last + timedelta(seconds=FREE_BOX_COOLDOWN_SECONDS) - row["db_now"]
             ).total_seconds()),
         ) if last is not None else 0
+        equipped_raw = row["equipped_skins"]
+        equipped = json.loads(equipped_raw) if isinstance(equipped_raw, str) else equipped_raw
+        if not isinstance(equipped, dict):
+            equipped = {}
         return {
             "tokens": int(row["tokens"] or 0),
             "gems": int(row["gems"] or 0),
             "blings": int(row["blings"] or 0),
-            "equipped_skins": dict(row["equipped_skins"] or {}),
+            "equipped_skins": equipped,
             "brawlers": [b.strip() for b in (row["brawlers"] or "").split(",") if b.strip()],
             "free_cooldown_seconds": seconds_left,
         }
